@@ -1,0 +1,288 @@
+'use client'
+
+import { Property, SiteSettings } from '@/types'
+import { urlForImage } from '@/sanity/lib/image'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Share2, MapPin, IndianRupee, CheckCircle2, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+
+interface PropertyCardProps {
+  property: Property
+  settings?: SiteSettings | null
+}
+
+// Map facility strings to Lucide icons
+const facilityIcons: Record<string, LucideIcon> = {
+  'AC': Wind,
+  'TV': Tv,
+  'Washing Machine': WashingMachine,
+  'Refrigerator': Archive,
+  'WiFi': Wifi,
+  'Geyser': Thermometer,
+  'Microwave': Microwave,
+  'Sofa': Sofa,
+  'Dining Table': Table,
+  'Wardrobe': Archive,
+  'CCTV': Camera,
+  'Power Backup': Zap,
+  'Lift': ArrowUpCircle,
+  'Parking': Car,
+  'Bike Parking': Bike,
+  'Car Parking': Car,
+  'Security': ShieldUser,
+  'Mattress': BedSingle,
+  'Kettle': Coffee,
+  'Water Purifier': GlassWater,
+  'Gas Stove': Flame,
+  'Induction Stove': PlugZap,
+  'Curtains': PanelsTopLeft,
+  'Study Table': LampDesk,
+  'Chair': Armchair,
+  'Kitchen Cabinets': ShelvingUnit,
+  'Exhaust Fan': Fan,
+}
+
+const getNearbyAreas = (property: Property) => {
+  const primaryArea = property.location.area?.trim().toLowerCase()
+
+  return Array.from(new Set(
+    (property.location.nearbyAreas || [])
+      .map((area) => area?.trim())
+      .filter((area): area is string => Boolean(area) && area.toLowerCase() !== primaryArea)
+  ))
+}
+
+function normalizeWhatsappNumber(phoneNumber?: string) {
+  const digits = phoneNumber?.replace(/\D/g, '') || ''
+
+  if (digits.length === 10) {
+    return `91${digits}`
+  }
+
+  return digits
+}
+
+export default function PropertyCard({ property, settings }: PropertyCardProps) {
+  const [showToast, setShowToast] = useState(false)
+  const [isCardHovered, setIsCardHovered] = useState(false)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const imageUrls = useMemo(() => (
+    property.images
+      ?.filter((image) => image.asset?._ref)
+      .map((image) => urlForImage(image).width(800).url()) || []
+  ), [property.images])
+  const activeImageUrl = imageUrls[activeImageIndex % imageUrls.length]
+  const primaryArea = property.location.area?.trim()
+  const nearbyAreas = getNearbyAreas(property).slice(0, 3)
+  const ownerWhatsappNumber = property.ownerContacts
+    ?.map((owner) => normalizeWhatsappNumber(owner.contactNumber))
+    .find(Boolean)
+  const fallbackWhatsappNumber = normalizeWhatsappNumber(settings?.whatsappNumber)
+  const whatsappNumber = ownerWhatsappNumber || fallbackWhatsappNumber
+
+  useEffect(() => {
+    if (!isCardHovered || imageUrls.length < 2) return
+
+    const interval = window.setInterval(() => {
+      setActiveImageIndex((current) => (current + 1) % imageUrls.length)
+    }, 1200)
+
+    return () => window.clearInterval(interval)
+  }, [imageUrls.length, isCardHovered])
+
+  const stopImageSlider = () => {
+    setIsCardHovered(false)
+    setActiveImageIndex(0)
+  }
+
+  const copyLinkToClipboard = async (url: string) => {
+    await navigator.clipboard.writeText(url)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 2000)
+  }
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const url = `${window.location.origin}/flats/${property.slug.current}`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: property.title,
+          text: `${property.title} in ${property.location.area}`,
+          url,
+        })
+        return
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return
+        }
+      }
+    }
+
+    await copyLinkToClipboard(url)
+  }
+
+  const handleWhatsappContact = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!whatsappNumber) return
+
+    const url = `${window.location.origin}/flats/${property.slug.current}`
+    const message = `${settings?.whatsappMessage || "Hi, I'm interested in a flat listed on We Live in Bangalore."}\n\nProperty: ${property.title}\nLink: ${url}`
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
+  }
+
+  return (
+    <Link href={`/flats/${property.slug.current}`} className="block group">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        onMouseEnter={() => setIsCardHovered(true)}
+        onMouseLeave={stopImageSlider}
+        onFocus={() => setIsCardHovered(true)}
+        onBlur={stopImageSlider}
+        className="relative bg-white rounded-[2rem] overflow-hidden border border-[#DDE8DD] hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(35,55,35,0.1)] transition-all duration-500 flex flex-col h-full"
+      >
+        {/* Image Container - Slightly shorter aspect ratio */}
+        <div className="relative aspect-[16/10] overflow-hidden">
+          {activeImageUrl ? (
+            <AnimatePresence initial={false} mode="popLayout">
+              <motion.div
+                key={activeImageUrl}
+                initial={{ opacity: 0, x: '16%' }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: '-16%' }}
+                transition={{ duration: 0.45, ease: 'easeInOut' }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src={activeImageUrl}
+                  alt={property.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  quality={90}
+                />
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            <div className="w-full h-full bg-[#EEF4EE]" />
+          )}
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+
+          {/* Rent Badge */}
+          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-[#1C1008] px-3 py-1.5 rounded-xl font-black flex items-center gap-1 shadow-2xl border border-white/10 text-sm">
+            <IndianRupee className="w-3 h-3" />
+            {property.pricing.monthlyRent.toLocaleString('en-IN')}
+            <span className="text-[9px] text-slate-500 font-bold uppercase ml-1">/ mo</span>
+          </div>
+
+          {property.isRecommended && (
+            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-100/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-800 shadow-xl shadow-amber-950/10 backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5" />
+              Recommended
+            </div>
+          )}
+        </div>
+
+        {/* Content - Compacted padding */}
+        <div className="p-6 flex flex-col flex-grow">
+          <div className="mb-4">
+            <div className="flex items-start gap-3">
+              <h3 className="min-w-0 flex-1 font-black text-xl text-[#1C1008] leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                {property.title}
+              </h3>
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Share property"
+                title="Share property"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#DDE8DD] bg-[#EEF4EE] text-primary transition-all hover:border-primary/40 hover:bg-primary hover:text-white active:scale-95"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-1 space-y-1.5 text-slate-500">
+              <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest">
+                <MapPin className="h-3 w-3 shrink-0 text-primary" />
+                <span className="min-w-0 truncate">
+                  Located in {primaryArea || property.location.area}
+                </span>
+              </div>
+              {nearbyAreas.length > 0 ? (
+                <p className="line-clamp-1 pl-4 text-[11px] font-bold leading-snug">
+                  Nearby {nearbyAreas.join(', ')}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Mini Amenities Row */}
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap gap-2">
+              {property.facilities?.slice(0, 4).map((fac) => {
+                const Icon = facilityIcons[fac] || CheckCircle2
+                return (
+                  <div key={fac} className="bg-[#EEF4EE] p-1.5 rounded-lg border border-[#DDE8DD]" title={fac}>
+                    <Icon className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                )
+              })}
+              {property.facilities && property.facilities.length > 4 && (
+                <div className="bg-[#EEF4EE] px-2 py-1.5 rounded-lg border border-[#DDE8DD] text-[9px] font-black text-primary">
+                  +{property.facilities.length - 4}
+                </div>
+              )}
+            </div>
+
+            {whatsappNumber && (
+              <button
+                type="button"
+                onClick={handleWhatsappContact}
+                aria-label={`Contact owner for ${property.title} on WhatsApp`}
+                title="Contact owner on WhatsApp"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-green-100 bg-green-50 text-green-700 shadow-sm transition-all hover:border-green-200 hover:bg-green-600 hover:text-white active:scale-95"
+              >
+                <MessageCircle className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="mt-auto pt-4 border-t border-[#E2EAE2] flex items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sqft</span>
+              <span className="text-[#1C1008] font-bold text-xs">{property.pricing.squareFeet}</span>
+            </div>
+            <div className="flex flex-col text-right">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Type</span>
+              <span className="text-[#1C1008] font-bold text-xs">{property.propertyType}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {showToast && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#1C1008] text-white px-6 py-3 rounded-2xl text-[10px] font-black shadow-2xl z-[200] flex items-center gap-3 border border-white/10"
+            >
+              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              LINK COPIED
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </Link>
+  )
+}

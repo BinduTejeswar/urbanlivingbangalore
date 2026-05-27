@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #F97316;
+  --color-accent: #F59E0B;
+  
+  /* Map Tailwind background/foreground to our CSS variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* Light Mode (Cozy & Welcoming) */
+:root {
+  --background: #F3ECE3;
+  --foreground: #1C1008;
+}
+
+/* Dark Mode (Premium & Modern) */
+.dark {
+  --background: #0F0D0C;
+  --foreground: #F8FAFC;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-quicksand), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+@layer base {
+  * {
+    @apply border-black/5 dark:border-white/5;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
