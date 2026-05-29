@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import type { UtilityBillsIncluded } from '@/types'
+import UtilityBillsCard from './UtilityBillsCard'
 import {
   ArrowUpRight,
   Calendar,
@@ -32,6 +34,7 @@ interface PricingDetailsPanelProps {
   availableFrom?: string
   propertyType: string
   furnishingStatus: string
+  utilityBillsIncluded?: UtilityBillsIncluded
   contactLinks: ContactLink[]
 }
 
@@ -43,6 +46,7 @@ export default function PricingDetailsPanel({
   availableFrom,
   propertyType,
   furnishingStatus,
+  utilityBillsIncluded,
   contactLinks,
 }: PricingDetailsPanelProps) {
   const rentDisplay = monthlyRent.toLocaleString('en-IN')
@@ -93,9 +97,11 @@ export default function PricingDetailsPanel({
                 </div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">{item.label}</p>
                 <p className="mt-1 break-words text-sm font-black leading-tight text-[#1C1008]">{item.value}</p>
-                <p className="mt-1 text-[10px] font-bold leading-tight text-slate-500">
-                  {item.note}
-                </p>
+                {item.note ? (
+                  <p className="mt-1 text-[10px] font-bold leading-tight text-slate-500">
+                    {item.note}
+                  </p>
+                ) : null}
               </div>
             )
           })}
@@ -123,6 +129,8 @@ export default function PricingDetailsPanel({
             })}
           </div>
         </div>
+
+        <UtilityBillsCard utilityBillsIncluded={utilityBillsIncluded} className="mt-3.5 lg:hidden" />
 
         <div className="mt-4 rounded-2xl border border-green-100 bg-green-50 p-3">
           <div className="mb-3 flex items-center gap-3 px-1">

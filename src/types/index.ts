@@ -14,6 +14,14 @@ export interface OwnerContact {
   contactNumber: string
 }
 
+export interface UtilityBillsIncluded {
+  electricity?: boolean
+  wifi?: boolean
+  water?: boolean
+}
+
+export type WashingMachineAccess = 'Common' | 'Individual'
+
 export type NearbyPlaceCategory =
   | 'Shopping Malls'
   | 'Metro & Commute'
@@ -52,11 +60,13 @@ export interface Property {
     monthlyMaintenance?: number
     maintenanceBilling?: 'Monthly' | 'One-time' | 'Included' | 'None'
     maintenanceNotes?: string
+    utilityBillsIncluded?: UtilityBillsIncluded
     squareFeet: number
   }
   furnishingStatus: 'Fully Furnished' | 'Semi Furnished' | 'Unfurnished'
   isRecommended?: boolean
   facilities?: string[]
+  washingMachineAccess?: WashingMachineAccess
   hasBalcony?: boolean
   facing?: string
   floorNumber?: number

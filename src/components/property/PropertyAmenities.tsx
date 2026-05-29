@@ -30,9 +30,11 @@ import {
   Fan,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { WashingMachineAccess } from '@/types'
 
 interface PropertyAmenitiesProps {
   facilities: string[]
+  washingMachineAccess?: WashingMachineAccess
 }
 
 interface AmenityGroupDefinition {
@@ -124,11 +126,11 @@ const amenityGroupDefinitions: AmenityGroupDefinition[] = [
 
 const featuredAmenityOrder = [
   'WiFi',
+  'Washing Machine',
   'Power Backup',
   'Lift',
   'Security',
   'Water Purifier',
-  'Washing Machine',
   'AC',
   'Geyser',
 ]
@@ -195,7 +197,14 @@ function getFeaturedFacilities(facilities: string[]) {
   return (preferredFacilities.length > 0 ? preferredFacilities : facilities).slice(0, 4)
 }
 
-export default function PropertyAmenities({ facilities }: PropertyAmenitiesProps) {
+function getFacilityDisplayName(facility: string, washingMachineAccess?: WashingMachineAccess) {
+  if (normalizeFacility(facility) !== 'washing machine') return facility
+  if (washingMachineAccess === 'Individual') return 'Individual Washing Machine'
+
+  return 'Common Washing Machine'
+}
+
+export default function PropertyAmenities({ facilities, washingMachineAccess }: PropertyAmenitiesProps) {
   const uniqueFacilities = getUniqueFacilities(facilities)
   const amenityGroups = getGroupedFacilities(uniqueFacilities)
   const featuredFacilities = getFeaturedFacilities(uniqueFacilities)
@@ -242,17 +251,18 @@ export default function PropertyAmenities({ facilities }: PropertyAmenitiesProps
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {featuredFacilities.map((facility) => {
               const Icon = facilityIcons[facility] || CheckCircle2
+              const displayName = getFacilityDisplayName(facility, washingMachineAccess)
 
               return (
                 <div
                   key={facility}
-                  className="flex min-h-24 flex-col justify-between rounded-2xl border border-[#DDE8DD] bg-[#EEF4EE] p-3"
+                  className="flex min-h-28 flex-col justify-between rounded-2xl border border-[#DDE8DD] bg-[#EEF4EE] p-3"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-primary shadow-sm">
                     <Icon className="h-4 w-4" />
                   </div>
                   <p className="mt-3 break-words text-xs font-black leading-tight text-[#1C1008]">
-                    {facility}
+                    {displayName}
                   </p>
                 </div>
               )
@@ -282,6 +292,7 @@ export default function PropertyAmenities({ facilities }: PropertyAmenitiesProps
                   <div className="flex flex-wrap gap-2">
                     {group.facilities.map((facility) => {
                       const Icon = facilityIcons[facility] || CheckCircle2
+                      const displayName = getFacilityDisplayName(facility, washingMachineAccess)
 
                       return (
                         <span
@@ -289,7 +300,7 @@ export default function PropertyAmenities({ facilities }: PropertyAmenitiesProps
                           className="inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-xl bg-white/85 px-2.5 py-1.5 text-[11px] font-black leading-tight text-slate-700 shadow-sm"
                         >
                           <Icon className="h-3.5 w-3.5 shrink-0 text-current" />
-                          <span className="min-w-0 break-words">{facility}</span>
+                          <span className="min-w-0 break-words">{displayName}</span>
                         </span>
                       )
                     })}

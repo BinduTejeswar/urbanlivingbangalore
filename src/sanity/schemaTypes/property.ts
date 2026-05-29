@@ -1,9 +1,45 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { set, type ObjectInputProps } from 'sanity'
+import { useEffect } from 'react'
+
+type PricingValue = {
+  monthlyRent?: number
+  depositType?: 'Fixed Amount' | 'Months of Rent'
+  depositMonths?: number
+  depositAmount?: number
+}
+
+function PricingInput(props: ObjectInputProps<PricingValue>) {
+  const { onChange, value } = props
+  const monthlyRent = Number(value?.monthlyRent)
+  const depositMonths = Number(value?.depositMonths)
+  const depositAmount = Number(value?.depositAmount)
+  const shouldCalculateDeposit = value?.depositType === 'Months of Rent'
+    && Number.isFinite(monthlyRent)
+    && monthlyRent > 0
+    && Number.isFinite(depositMonths)
+    && depositMonths > 0
+
+  useEffect(() => {
+    if (!shouldCalculateDeposit) return
+
+    const calculatedDepositAmount = monthlyRent * depositMonths
+
+    if (depositAmount === calculatedDepositAmount) return
+
+    onChange(set(calculatedDepositAmount, ['depositAmount']))
+  }, [depositAmount, depositMonths, monthlyRent, onChange, shouldCalculateDeposit])
+
+  return props.renderDefault(props)
+}
 
 export const property = defineType({
   name: 'property',
   title: 'Property',
   type: 'document',
+  initialValue: {
+    washingMachineAccess: 'Common',
+  },
   fields: [
     defineField({
       name: 'title',
@@ -106,9 +142,6 @@ export const property = defineType({
           type: 'array',
           of: [{ type: 'string' }],
           description: 'Add all nearby areas this flat can be discovered under. Example: Indiranagar, Domlur, Ulsoor',
-          options: {
-            layout: 'tags',
-          },
         }),
         defineField({
           name: 'googleMapsUrl',
@@ -123,6 +156,9 @@ export const property = defineType({
       name: 'pricing',
       title: 'Pricing',
       type: 'object',
+      components: {
+        input: PricingInput,
+      },
       fields: [
         defineField({ name: 'monthlyRent', title: 'Monthly Rent', type: 'number', validation: (Rule) => Rule.required() }),
         defineField({
@@ -141,14 +177,13 @@ export const property = defineType({
           name: 'depositMonths',
           title: 'Deposit Months',
           type: 'number',
-          description: 'Use when deposit is collected as months of rent. Example: 2',
+          description: 'Optional. Enter months here to auto-calculate the deposit amount from monthly rent.',
           hidden: ({ parent }) => parent?.depositType !== 'Months of Rent',
         }),
         defineField({
           name: 'depositAmount',
           title: 'Deposit Amount',
           type: 'number',
-          description: 'Exact refundable deposit amount shown on the property page.',
           validation: (Rule) => Rule.required(),
         }),
         defineField({
@@ -176,6 +211,37 @@ export const property = defineType({
           title: 'Maintenance Notes',
           type: 'string',
           description: 'Optional. Example: Collected upfront, paid to association, refundable.',
+        }),
+        defineField({
+          name: 'utilityBillsIncluded',
+          title: 'Bills Included in Rent',
+          type: 'object',
+          description: 'Check each utility bill that is already included in the monthly rent.',
+          initialValue: {
+            electricity: false,
+            wifi: false,
+            water: false,
+          },
+          fields: [
+            defineField({
+              name: 'electricity',
+              title: 'Electricity Bill Included',
+              type: 'boolean',
+              initialValue: false,
+            }),
+            defineField({
+              name: 'wifi',
+              title: 'WiFi Bill Included',
+              type: 'boolean',
+              initialValue: false,
+            }),
+            defineField({
+              name: 'water',
+              title: 'Water Bill Included',
+              type: 'boolean',
+              initialValue: false,
+            }),
+          ],
         }),
         defineField({ name: 'squareFeet', title: 'Square Feet', type: 'number', validation: (Rule) => Rule.required() }),
       ],
@@ -237,6 +303,24 @@ export const property = defineType({
       },
     }),
     defineField({
+      name: 'washingMachineAccess',
+      title: 'Washing Machine Access',
+      type: 'string',
+      description: 'Choose how the washing machine is available for this property.',
+      hidden: ({ document }) => (
+        !Array.isArray(document?.facilities)
+        || !document.facilities.includes('Washing Machine')
+      ),
+      options: {
+        layout: 'radio',
+        list: [
+          { title: 'Common / shared washing machine', value: 'Common' },
+          { title: 'Separate individual washing machine', value: 'Individual' },
+        ],
+      },
+      initialValue: 'Common',
+    }),
+    defineField({
       name: 'hasBalcony',
       title: 'Has Balcony',
       type: 'boolean',
@@ -288,7 +372,23 @@ export const property = defineType({
           name: 'nearbyPlace',
           title: 'Nearby Place',
           type: 'object',
+          initialValue: {
+            category: 'Other',
+          },
           fields: [
+            defineField({
+              name: 'name',
+              title: 'Place Name',
+              type: 'string',
+              description: 'Example: Orion Mall, Indiranagar Metro Station, Apollo Clinic',
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'distance',
+              title: 'Distance / Note',
+              type: 'string',
+              description: 'Optional. Example: 500m, 1.2km, 10 min walk',
+            }),
             defineField({
               name: 'category',
               title: 'Category',
@@ -305,19 +405,6 @@ export const property = defineType({
                 ],
               },
               validation: (Rule) => Rule.required(),
-            }),
-            defineField({
-              name: 'name',
-              title: 'Place Name',
-              type: 'string',
-              description: 'Example: Orion Mall, Indiranagar Metro Station, Apollo Clinic',
-              validation: (Rule) => Rule.required(),
-            }),
-            defineField({
-              name: 'distance',
-              title: 'Distance / Note',
-              type: 'string',
-              description: 'Optional. Example: 500m, 1.2km, 10 min walk',
             }),
           ],
           preview: {

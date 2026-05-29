@@ -4,9 +4,9 @@ import { Property, SiteSettings } from '@/types'
 import { urlForImage } from '@/sanity/lib/image'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Share2, MapPin, IndianRupee, CheckCircle2, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle } from 'lucide-react'
+import { Share2, MapPin, IndianRupee, CheckCircle2, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface PropertyCardProps {
@@ -69,12 +69,16 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
   const [showToast, setShowToast] = useState(false)
   const [isCardHovered, setIsCardHovered] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const touchStartXRef = useRef<number | null>(null)
+  const touchStartYRef = useRef<number | null>(null)
+  const didSwipeImageRef = useRef(false)
   const imageUrls = useMemo(() => (
     property.images
       ?.filter((image) => image.asset?._ref)
       .map((image) => urlForImage(image).width(800).url()) || []
   ), [property.images])
   const activeImageUrl = imageUrls[activeImageIndex % imageUrls.length]
+  const hasMultipleImages = imageUrls.length > 1
   const primaryArea = property.location.area?.trim()
   const nearbyAreas = getNearbyAreas(property).slice(0, 3)
   const ownerWhatsappNumber = property.ownerContacts
@@ -82,6 +86,11 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
     .find(Boolean)
   const fallbackWhatsappNumber = normalizeWhatsappNumber(settings?.whatsappNumber)
   const whatsappNumber = ownerWhatsappNumber || fallbackWhatsappNumber
+  const utilityBillDetails = [
+    { label: 'Power', included: Boolean(property.pricing.utilityBillsIncluded?.electricity), icon: Zap },
+    { label: 'WiFi', included: Boolean(property.pricing.utilityBillsIncluded?.wifi), icon: Wifi },
+    { label: 'Water', included: Boolean(property.pricing.utilityBillsIncluded?.water), icon: GlassWater },
+  ]
 
   useEffect(() => {
     if (!isCardHovered || imageUrls.length < 2) return
@@ -96,6 +105,57 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
   const stopImageSlider = () => {
     setIsCardHovered(false)
     setActiveImageIndex(0)
+  }
+
+  const goToImage = (direction: -1 | 1, event?: React.SyntheticEvent) => {
+    event?.preventDefault()
+    event?.stopPropagation()
+
+    if (!hasMultipleImages) return
+
+    setIsCardHovered(false)
+    setActiveImageIndex((current) => (current + direction + imageUrls.length) % imageUrls.length)
+  }
+
+  const handleImageTouchStart = (event: React.TouchEvent) => {
+    if (!hasMultipleImages) return
+
+    const touch = event.touches[0]
+    touchStartXRef.current = touch.clientX
+    touchStartYRef.current = touch.clientY
+    didSwipeImageRef.current = false
+  }
+
+  const handleImageTouchEnd = (event: React.TouchEvent) => {
+    if (!hasMultipleImages || touchStartXRef.current === null || touchStartYRef.current === null) return
+
+    const touch = event.changedTouches[0]
+    const deltaX = touch.clientX - touchStartXRef.current
+    const deltaY = touch.clientY - touchStartYRef.current
+    const isHorizontalSwipe = Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2
+
+    touchStartXRef.current = null
+    touchStartYRef.current = null
+
+    if (!isHorizontalSwipe) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    didSwipeImageRef.current = true
+    setIsCardHovered(false)
+    setActiveImageIndex((current) => (
+      deltaX < 0
+        ? (current + 1) % imageUrls.length
+        : (current - 1 + imageUrls.length) % imageUrls.length
+    ))
+  }
+
+  const handleCardClickCapture = (event: React.MouseEvent) => {
+    if (!didSwipeImageRef.current) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    didSwipeImageRef.current = false
   }
 
   const copyLinkToClipboard = async (url: string) => {
@@ -148,10 +208,15 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         onMouseLeave={stopImageSlider}
         onFocus={() => setIsCardHovered(true)}
         onBlur={stopImageSlider}
+        onClickCapture={handleCardClickCapture}
         className="relative bg-white rounded-[2rem] overflow-hidden border border-[#DDE8DD] hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(35,55,35,0.1)] transition-all duration-500 flex flex-col h-full"
       >
         {/* Image Container - Slightly shorter aspect ratio */}
-        <div className="relative aspect-[16/10] overflow-hidden">
+        <div
+          className="relative aspect-[16/10] touch-pan-y overflow-hidden"
+          onTouchStart={handleImageTouchStart}
+          onTouchEnd={handleImageTouchEnd}
+        >
           {activeImageUrl ? (
             <AnimatePresence initial={false} mode="popLayout">
               <motion.div
@@ -191,6 +256,41 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
               Recommended
             </div>
           )}
+
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                onClick={(event) => goToImage(-1, event)}
+                aria-label="Previous property image"
+                title="Previous image"
+                className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/50 active:scale-95 md:hidden"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => goToImage(1, event)}
+                aria-label="Next property image"
+                title="Next image"
+                className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/50 active:scale-95 md:hidden"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5 md:hidden">
+                {imageUrls.map((imageUrl, index) => (
+                  <span
+                    key={`${imageUrl}-${index}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === activeImageIndex % imageUrls.length
+                        ? 'w-5 bg-white'
+                        : 'w-1.5 bg-white/55'
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Content - Compacted padding */}
@@ -223,6 +323,34 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
                 </p>
               ) : null}
             </div>
+          </div>
+
+          <div className="mb-4 grid grid-cols-3 gap-1.5">
+            {utilityBillDetails.map((item) => {
+              const Icon = item.icon
+
+              return (
+                <div
+                  key={item.label}
+                  className={`min-h-12 rounded-xl border px-2 py-1.5 ${
+                    item.included
+                      ? 'border-green-100 bg-green-50 text-green-700'
+                      : 'border-[#E2EAE2] bg-[#F6F8F4] text-slate-500'
+                  }`}
+                  title={`${item.label} bill ${item.included ? 'included in rent' : 'paid separately'}`}
+                >
+                  <div className="mb-1 flex items-center gap-1.5">
+                    <Icon className="h-3 w-3 shrink-0" />
+                    <span className="min-w-0 truncate text-[9px] font-black uppercase tracking-widest">
+                      {item.label}
+                    </span>
+                  </div>
+                  <p className="text-[9px] font-black leading-none text-[#1C1008]">
+                    {item.included ? 'Included' : 'Excluded'}
+                  </p>
+                </div>
+              )
+            })}
           </div>
 
           {/* Mini Amenities Row */}

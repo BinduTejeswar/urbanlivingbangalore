@@ -7,6 +7,7 @@ import PropertyDetailsPanel from '@/components/property/PropertyDetailsPanel'
 import PricingDetailsPanel, { type ContactLink } from '@/components/property/PricingDetailsPanel'
 import PropertyAmenities from '@/components/property/PropertyAmenities'
 import SharePopover from '@/components/property/SharePopover'
+import UtilityBillsCard from '@/components/property/UtilityBillsCard'
 import Footer from '@/components/ui/Footer'
 import Navbar from '@/components/ui/Navbar'
 import Link from 'next/link'
@@ -82,7 +83,7 @@ const formatDeposit = (pricing: {
 
   return {
     value: formatCurrency(depositAmount),
-    note: isMonthsOfRent ? `${pricing.depositMonths} months rent` : 'Refundable deposit',
+    note: isMonthsOfRent ? `${pricing.depositMonths} months rent` : '',
   }
 }
 
@@ -232,6 +233,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   </div>
                 </div>
               </div>
+
+              <UtilityBillsCard
+                utilityBillsIncluded={property.pricing.utilityBillsIncluded}
+                className="hidden lg:block"
+              />
             </div>
 
             <PricingDetailsPanel
@@ -242,6 +248,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               availableFrom={property.availableFrom}
               propertyType={property.propertyType}
               furnishingStatus={property.furnishingStatus}
+              utilityBillsIncluded={property.pricing.utilityBillsIncluded}
               contactLinks={contactLinks}
             />
           </section>
@@ -261,7 +268,10 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           )}
 
           {property.facilities && property.facilities.length > 0 && (
-            <PropertyAmenities facilities={property.facilities} />
+            <PropertyAmenities
+              facilities={property.facilities}
+              washingMachineAccess={property.washingMachineAccess}
+            />
           )}
 
           <NearbyPlacesSection places={property.nearbyPlaces} />
