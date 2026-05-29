@@ -220,7 +220,7 @@ export const property = defineType({
           initialValue: {
             electricity: false,
             wifi: false,
-            water: false,
+            water: true,
           },
           fields: [
             defineField({
@@ -239,7 +239,7 @@ export const property = defineType({
               name: 'water',
               title: 'Water Bill Included',
               type: 'boolean',
-              initialValue: false,
+              initialValue: true,
             }),
           ],
         }),

@@ -69,8 +69,8 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
   const [showToast, setShowToast] = useState(false)
   const [isCardHovered, setIsCardHovered] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
-  const touchStartXRef = useRef<number | null>(null)
-  const touchStartYRef = useRef<number | null>(null)
+  const pointerStartXRef = useRef<number | null>(null)
+  const pointerStartYRef = useRef<number | null>(null)
   const didSwipeImageRef = useRef(false)
   const imageUrls = useMemo(() => (
     property.images
@@ -86,11 +86,6 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
     .find(Boolean)
   const fallbackWhatsappNumber = normalizeWhatsappNumber(settings?.whatsappNumber)
   const whatsappNumber = ownerWhatsappNumber || fallbackWhatsappNumber
-  const utilityBillDetails = [
-    { label: 'Power', included: Boolean(property.pricing.utilityBillsIncluded?.electricity), icon: Zap },
-    { label: 'WiFi', included: Boolean(property.pricing.utilityBillsIncluded?.wifi), icon: Wifi },
-    { label: 'Water', included: Boolean(property.pricing.utilityBillsIncluded?.water), icon: GlassWater },
-  ]
 
   useEffect(() => {
     if (!isCardHovered || imageUrls.length < 2) return
@@ -104,7 +99,10 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
 
   const stopImageSlider = () => {
     setIsCardHovered(false)
-    setActiveImageIndex(0)
+  }
+
+  const stopImageButtonPointer = (event: React.PointerEvent) => {
+    event.stopPropagation()
   }
 
   const goToImage = (direction: -1 | 1, event?: React.SyntheticEvent) => {
@@ -117,25 +115,32 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
     setActiveImageIndex((current) => (current + direction + imageUrls.length) % imageUrls.length)
   }
 
-  const handleImageTouchStart = (event: React.TouchEvent) => {
+  const handleImagePointerDown = (event: React.PointerEvent) => {
     if (!hasMultipleImages) return
 
-    const touch = event.touches[0]
-    touchStartXRef.current = touch.clientX
-    touchStartYRef.current = touch.clientY
+    pointerStartXRef.current = event.clientX
+    pointerStartYRef.current = event.clientY
     didSwipeImageRef.current = false
+    event.currentTarget.setPointerCapture(event.pointerId)
   }
 
-  const handleImageTouchEnd = (event: React.TouchEvent) => {
-    if (!hasMultipleImages || touchStartXRef.current === null || touchStartYRef.current === null) return
+  const handleImagePointerUp = (event: React.PointerEvent) => {
+    if (!hasMultipleImages || pointerStartXRef.current === null || pointerStartYRef.current === null) {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId)
+      }
+      return
+    }
 
-    const touch = event.changedTouches[0]
-    const deltaX = touch.clientX - touchStartXRef.current
-    const deltaY = touch.clientY - touchStartYRef.current
+    const deltaX = event.clientX - pointerStartXRef.current
+    const deltaY = event.clientY - pointerStartYRef.current
     const isHorizontalSwipe = Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2
 
-    touchStartXRef.current = null
-    touchStartYRef.current = null
+    pointerStartXRef.current = null
+    pointerStartYRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
 
     if (!isHorizontalSwipe) return
 
@@ -148,6 +153,14 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         ? (current + 1) % imageUrls.length
         : (current - 1 + imageUrls.length) % imageUrls.length
     ))
+  }
+
+  const handleImagePointerCancel = (event: React.PointerEvent) => {
+    pointerStartXRef.current = null
+    pointerStartYRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
   }
 
   const handleCardClickCapture = (event: React.MouseEvent) => {
@@ -214,8 +227,9 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         {/* Image Container - Slightly shorter aspect ratio */}
         <div
           className="relative aspect-[16/10] touch-pan-y overflow-hidden"
-          onTouchStart={handleImageTouchStart}
-          onTouchEnd={handleImageTouchEnd}
+          onPointerDown={handleImagePointerDown}
+          onPointerUp={handleImagePointerUp}
+          onPointerCancel={handleImagePointerCancel}
         >
           {activeImageUrl ? (
             <AnimatePresence initial={false} mode="popLayout">
@@ -230,9 +244,10 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
                 <Image
                   src={activeImageUrl}
                   alt={property.title}
+                  draggable={false}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="select-none object-cover transition-transform duration-700 group-hover:scale-105"
                   quality={90}
                 />
               </motion.div>
@@ -261,23 +276,27 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
             <>
               <button
                 type="button"
+                onPointerDown={stopImageButtonPointer}
+                onPointerUp={stopImageButtonPointer}
                 onClick={(event) => goToImage(-1, event)}
                 aria-label="Previous property image"
                 title="Previous image"
-                className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/50 active:scale-95 md:hidden"
+                className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/50 active:scale-95"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
+                onPointerDown={stopImageButtonPointer}
+                onPointerUp={stopImageButtonPointer}
                 onClick={(event) => goToImage(1, event)}
                 aria-label="Next property image"
                 title="Next image"
-                className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/50 active:scale-95 md:hidden"
+                className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/50 active:scale-95"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
-              <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5 md:hidden">
+              <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
                 {imageUrls.map((imageUrl, index) => (
                   <span
                     key={`${imageUrl}-${index}`}
@@ -323,34 +342,6 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
                 </p>
               ) : null}
             </div>
-          </div>
-
-          <div className="mb-4 grid grid-cols-3 gap-1.5">
-            {utilityBillDetails.map((item) => {
-              const Icon = item.icon
-
-              return (
-                <div
-                  key={item.label}
-                  className={`min-h-12 rounded-xl border px-2 py-1.5 ${
-                    item.included
-                      ? 'border-green-100 bg-green-50 text-green-700'
-                      : 'border-[#E2EAE2] bg-[#F6F8F4] text-slate-500'
-                  }`}
-                  title={`${item.label} bill ${item.included ? 'included in rent' : 'paid separately'}`}
-                >
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <Icon className="h-3 w-3 shrink-0" />
-                    <span className="min-w-0 truncate text-[9px] font-black uppercase tracking-widest">
-                      {item.label}
-                    </span>
-                  </div>
-                  <p className="text-[9px] font-black leading-none text-[#1C1008]">
-                    {item.included ? 'Included' : 'Excluded'}
-                  </p>
-                </div>
-              )
-            })}
           </div>
 
           {/* Mini Amenities Row */}

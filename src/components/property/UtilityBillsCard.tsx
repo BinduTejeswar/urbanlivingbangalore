@@ -9,9 +9,9 @@ interface UtilityBillsCardProps {
 
 export default function UtilityBillsCard({ utilityBillsIncluded, className }: UtilityBillsCardProps) {
   const utilityBillDetails = [
-    { label: 'Electricity', included: Boolean(utilityBillsIncluded?.electricity), icon: Zap },
-    { label: 'WiFi', included: Boolean(utilityBillsIncluded?.wifi), icon: Wifi },
-    { label: 'Water', included: Boolean(utilityBillsIncluded?.water), icon: Droplets },
+    { label: 'Electricity', mobileLabel: 'Power', included: utilityBillsIncluded?.electricity === true, icon: Zap },
+    { label: 'WiFi', mobileLabel: 'WiFi', included: utilityBillsIncluded?.wifi === true, icon: Wifi },
+    { label: 'Water', mobileLabel: 'Water', included: utilityBillsIncluded?.water !== false, icon: Droplets },
   ]
 
   return (
@@ -35,9 +35,15 @@ export default function UtilityBillsCard({ utilityBillsIncluded, className }: Ut
               <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg bg-white shadow-sm">
                 <Icon className="h-3.5 w-3.5" />
               </div>
-              <p className="break-words text-[9px] font-black uppercase tracking-widest">{item.label}</p>
-              <p className="mt-1 text-[10px] font-black leading-tight text-[#1C1008]">
-                {item.included ? 'Included in rent' : 'Excluded from rent'}
+              <p className="whitespace-nowrap text-[9px] font-black uppercase tracking-normal sm:tracking-widest">
+                <span className="sm:hidden">{item.mobileLabel}</span>
+                <span className="hidden sm:inline">{item.label}</span>
+              </p>
+              <p className="mt-1 whitespace-nowrap text-[10px] font-black leading-tight text-[#1C1008]">
+                <span className="sm:hidden">{item.included ? 'Included' : 'Excluded'}</span>
+                <span className="hidden sm:inline">
+                  {item.included ? 'Included in rent' : 'Excluded from rent'}
+                </span>
               </p>
             </div>
           )
