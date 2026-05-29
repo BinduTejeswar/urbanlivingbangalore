@@ -294,22 +294,22 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
       </div>
 
       {!isFooterVisible && (
-        <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-[#DDE8DD] bg-white/95 pb-[calc(env(safe-area-inset-bottom)+0.35rem)] shadow-[0_-18px_40px_rgba(28,16,8,0.12)] backdrop-blur-xl lg:hidden">
-          <div className={`mx-auto grid h-20 max-w-md ${whatsappUrl ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-[#DDE8DD] bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-18px_40px_rgba(28,16,8,0.12)] backdrop-blur-xl lg:hidden">
+          <div className={`mx-auto grid h-12 max-w-md ${whatsappUrl ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <button
               type="button"
               onClick={openMobileFilters}
-              className="relative flex flex-col items-center justify-center gap-1 font-bold text-slate-700 active:bg-[#EEF4EE]"
+              className="relative flex items-center justify-center gap-1.5 font-bold text-slate-700 active:bg-[#EEF4EE]"
             >
               <span className="relative">
-                <Filter className="h-6 w-6 text-slate-700" />
+                <Filter className="h-4 w-4 text-slate-700" />
                 {activeFilterCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-black text-white">
+                  <span className="absolute -right-2 -top-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-primary px-1 text-[8px] font-black text-white">
                     {activeFilterCount}
                   </span>
                 )}
               </span>
-              <span className="text-xs">Filter</span>
+              <span className="text-[11px] leading-none">Filter</span>
             </button>
             {whatsappUrl && (
               <a
@@ -317,10 +317,10 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Chat on WhatsApp"
-                className="flex flex-col items-center justify-center gap-1 border-l border-[#DDE8DD] font-bold text-slate-700 active:bg-[#EEF4EE]"
+                className="flex items-center justify-center gap-1.5 border-l border-[#DDE8DD] font-bold text-slate-700 active:bg-[#EEF4EE]"
               >
-                <MessageCircle className="h-6 w-6 text-[#12A150]" />
-                <span className="text-xs">WhatsApp</span>
+                <MessageCircle className="h-4 w-4 text-[#12A150]" />
+                <span className="text-[11px] leading-none">WhatsApp</span>
               </a>
             )}
           </div>

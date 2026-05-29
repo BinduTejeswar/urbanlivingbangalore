@@ -1,7 +1,7 @@
 'use client'
 
 import type { SiteSettings } from '@/types'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, MessageCircle, X } from 'lucide-react'
@@ -29,8 +29,11 @@ function normalizeWhatsappNumber(phoneNumber?: string) {
 export default function Navbar({ variant = 'default', settings, showFloatingWhatsapp = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileNavHidden, setIsMobileNavHidden] = useState(false)
+  const lastScrollYRef = useRef(0)
   const pathname = usePathname()
   void variant
+  const shouldAutoHideMobileNavbar = pathname === '/flats' || pathname.startsWith('/flats/')
   const whatsappNumber = normalizeWhatsappNumber(settings?.whatsappNumber)
   const whatsappMessage = settings?.whatsappMessage || WHATSAPP_MESSAGE
   const whatsappUrl = whatsappNumber
@@ -39,11 +42,31 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      const currentScrollY = window.scrollY
+
+      setIsScrolled(currentScrollY > 20)
+
+      if (!shouldAutoHideMobileNavbar || isMenuOpen) {
+        setIsMobileNavHidden(false)
+        lastScrollYRef.current = currentScrollY
+        return
+      }
+
+      const isScrollingDown = currentScrollY > lastScrollYRef.current
+      const hasMovedEnough = Math.abs(currentScrollY - lastScrollYRef.current) > 8
+
+      if (currentScrollY < 80) {
+        setIsMobileNavHidden(false)
+      } else if (hasMovedEnough) {
+        setIsMobileNavHidden(isScrollingDown)
+      }
+
+      lastScrollYRef.current = currentScrollY
     }
-    window.addEventListener('scroll', handleScroll)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [isMenuOpen, shouldAutoHideMobileNavbar])
 
   const navLinks = [
     { name: 'HOME', href: '/' },
@@ -56,6 +79,8 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
 
   const navClass = `fixed top-0 w-full z-[100] border-b border-[#D9D2CA] bg-[#F2F0ED]/95 backdrop-blur-xl transition-all duration-300 ${
     isScrolled || isMenuOpen ? 'py-2' : 'py-2.5'
+  } ${
+    shouldAutoHideMobileNavbar && isMobileNavHidden && !isMenuOpen ? '-translate-y-full md:translate-y-0' : 'translate-y-0'
   }`
   const getLinkClass = (href: string, mobile = false) => {
     const isActive = href === '/' ? pathname === href : pathname === href.split('#')[0]
