@@ -4,7 +4,7 @@ import { Property, SiteSettings } from '@/types'
 import { urlForImage } from '@/sanity/lib/image'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Share2, MapPin, IndianRupee, CheckCircle2, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Share2, MapPin, IndianRupee, CheckCircle2, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, Fingerprint, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -33,6 +33,7 @@ const facilityIcons: Record<string, LucideIcon> = {
   'Bike Parking': Bike,
   'Car Parking': Car,
   'Security': ShieldUser,
+  'Biometric Entry': Fingerprint,
   'Mattress': BedSingle,
   'Kettle': Coffee,
   'Water Purifier': GlassWater,

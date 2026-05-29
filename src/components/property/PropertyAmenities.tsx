@@ -10,6 +10,7 @@ import {
   Car,
   CheckCircle2,
   Coffee,
+  Fingerprint,
   Flame,
   GlassWater,
   LampDesk,
@@ -69,6 +70,7 @@ const facilityIcons: Record<string, LucideIcon> = {
   'Bike Parking': Bike,
   'Car Parking': Car,
   Security: ShieldUser,
+  'Biometric Entry': Fingerprint,
   Mattress: BedSingle,
   Kettle: Coffee,
   'Water Purifier': GlassWater,
@@ -119,7 +121,7 @@ const amenityGroupDefinitions: AmenityGroupDefinition[] = [
   {
     title: 'Building',
     icon: Building2,
-    members: createMemberSet(['CCTV', 'Lift', 'Security', 'Parking', 'Bike Parking', 'Car Parking']),
+    members: createMemberSet(['CCTV', 'Lift', 'Security', 'Biometric Entry', 'Parking', 'Bike Parking', 'Car Parking']),
     tone: 'border-rose-100 bg-rose-50/70 text-rose-700',
   },
 ]
@@ -130,6 +132,7 @@ const featuredAmenityOrder = [
   'Power Backup',
   'Lift',
   'Security',
+  'Biometric Entry',
   'Water Purifier',
   'AC',
   'Geyser',

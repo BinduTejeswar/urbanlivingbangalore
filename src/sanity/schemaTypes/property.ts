@@ -289,6 +289,7 @@ export const property = defineType({
           { title: 'Bike Parking', value: 'Bike Parking' },
           { title: 'Car Parking', value: 'Car Parking' },
           { title: 'Security', value: 'Security' },
+          { title: 'Biometric Entry', value: 'Biometric Entry' },
           { title: 'Mattress', value: 'Mattress' },
           { title: 'Kettle', value: 'Kettle' },
           { title: 'Water Purifier', value: 'Water Purifier' },
