@@ -119,7 +119,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
   const displayArea = getDisplayAreas(property).join(', ')
 
   return {
-    title: `${property.title} in ${displayArea} | We Live in Bangalore`,
+    title: `${property.title} in ${displayArea} | UrbanLivingBangalore`,
     description: `Rent: ₹${property.pricing.monthlyRent}/mo. ${property.propertyType}, ${property.furnishingStatus} flat near ${displayArea}. Zero brokerage.`,
     openGraph: {
       title: `${property.title} | ${displayArea}`,
@@ -175,7 +175,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
   return (
     <div className="min-h-screen bg-[#F6F8F4] text-[#1C1008] transition-colors duration-500">
-      <Navbar variant="dark" settings={settings} />
+      <Navbar settings={settings} />
       
       <main className="max-w-7xl mx-auto px-4 md:px-6 pt-16 pb-14 md:pt-18">
         {/* Back Button */}

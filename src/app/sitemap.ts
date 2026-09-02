@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getCachedProperties } from '@/sanity/lib/fetchers'
 
-const siteUrl = 'https://www.weliveinbangalore.com'
+const siteUrl = 'https://www.urbanlivingbangalore.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const properties = await getCachedProperties()

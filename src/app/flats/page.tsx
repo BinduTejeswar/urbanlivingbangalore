@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'No Brokerage Flats in Bangalore | We Live in Bangalore',
+  title: 'No Brokerage Flats in Bangalore | UrbanLivingBangalore',
   description: 'Explore owner-listed flats in Bangalore with no agents and no brokerage.',
 }
 
@@ -19,8 +19,8 @@ export default async function FlatsPage() {
   ])
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#0F0D0C] text-white transition-colors duration-500">
-      <Navbar variant="dark" settings={settings} />
+    <main className="min-h-screen flex flex-col bg-[#F3ECE3] transition-colors duration-500">
+      <Navbar settings={settings} />
       <ListingGrid properties={properties || []} settings={settings} />
       <ComfortAmenities />
       <Footer settings={settings} compact />

@@ -14,7 +14,7 @@ const singletonActions = new Set(['publish', 'discardChanges', 'restore'])
 export default defineConfig({
   basePath: '/studio',
   name: 'default',
-  title: 'We Live in Bangalore — Admin',
+  title: 'UrbanLivingBangalore — Admin',
 
   projectId,
   dataset,

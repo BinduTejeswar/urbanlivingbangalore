@@ -208,7 +208,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
     if (!whatsappNumber) return
 
     const url = `${window.location.origin}/flats/${property.slug.current}`
-    const message = `${settings?.whatsappMessage || "Hi, I'm interested in a flat listed on We Live in Bangalore."}\n\nProperty: ${property.title}\nLink: ${url}`
+    const message = `${settings?.whatsappMessage || "Hi, I'm interested in a flat listed on UrbanLivingBangalore."}\n\nProperty: ${property.title}\nLink: ${url}`
     window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
   }
 

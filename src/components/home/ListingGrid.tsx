@@ -23,7 +23,7 @@ const DEFAULT_FILTERS: PropertyFilters = {
   sortBy: 'Budget Low',
 }
 
-const WHATSAPP_MESSAGE = "Hi, I'm interested in a flat listed on We Live in Bangalore."
+const WHATSAPP_MESSAGE = "Hi, I'm interested in a flat listed on UrbanLivingBangalore."
 
 const SORT_OPTIONS: Array<{ label: string; value: PropertyFilters['sortBy'] }> = [
   { label: 'Low to High', value: 'Budget Low' },

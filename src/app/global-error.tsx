@@ -53,7 +53,7 @@ export default function GlobalError({
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: '#FFF7ED',
-                color: '#F97316',
+                color: '#C2410C',
                 fontWeight: 900,
                 fontSize: 24,
               }}
@@ -78,7 +78,7 @@ export default function GlobalError({
                   fontWeight: 700,
                 }}
               >
-                Admin: <a href={`mailto:${adminEmail}`} style={{ color: '#F97316' }}>{adminEmail}</a>
+                Admin: <a href={`mailto:${adminEmail}`} style={{ color: '#C2410C' }}>{adminEmail}</a>
               </p>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 20 }}>
@@ -88,7 +88,7 @@ export default function GlobalError({
                 style={{
                   border: 0,
                   borderRadius: 16,
-                  background: '#F97316',
+                  background: '#C2410C',
                   color: '#FFFFFF',
                   cursor: 'pointer',
                   fontWeight: 900,

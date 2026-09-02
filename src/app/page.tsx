@@ -1,4 +1,4 @@
-import { getCachedSiteSettings } from '@/sanity/lib/fetchers'
+import { getCachedProperties, getCachedSiteSettings } from '@/sanity/lib/fetchers'
 import Hero from '@/components/home/Hero'
 import ComfortAmenities from '@/components/home/ComfortAmenities'
 import Gallery from '@/components/home/Gallery'
@@ -8,27 +8,39 @@ import Navbar from '@/components/ui/Navbar'
 export const revalidate = 60
 
 export default async function Home() {
-  const settings = await getCachedSiteSettings()
+  const [settings, properties] = await Promise.all([
+    getCachedSiteSettings(),
+    getCachedProperties(),
+  ])
+
+  const localities = Array.from(new Set(
+    (properties || [])
+      .flatMap((property) => [property.location.area, ...(property.location.nearbyAreas || [])])
+      .map((area) => area?.trim())
+      .filter((area): area is string => Boolean(area))
+  )).sort()
+
+  const stats = [
+    { label: 'Verified Flats', value: `${(properties || []).length}+`, card: 'bg-[#FCEDE3] border-[#F3D2B8]' },
+    { label: 'Brokerage Fee', value: '₹0', card: 'bg-[#EAF5F5] border-[#BFE0E0]' },
+    { label: 'Localities', value: `${localities.length || 0}+`, card: 'bg-[#FCEDE3] border-[#F3D2B8]' },
+    { label: 'Owner Direct', value: '100%', card: 'bg-[#EAF5F5] border-[#BFE0E0]' },
+  ]
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#0F0D0C] transition-colors duration-500">
-      <Navbar variant="dark" settings={settings} showFloatingWhatsapp />
-      <Hero />
-      
-      {/* Quick Stats Section inspired by reference */}
-      <section className="py-12 md:py-20 bg-white border-y border-[#E8E2DC] transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-          {[
-            { label: "Locality", value: "Bangalore", card: "bg-[#EAF7F8] border-[#BFE7EA]" },
-            { label: "Brokerage", value: "Zero", card: "bg-[#FFF4E8] border-[#FED7AA]" },
-            { label: "Direct", value: "Owner", card: "bg-[#EEF8EF] border-[#CDEBD0]" },
-            { label: "Support", value: "24/7", card: "bg-[#F3F0FF] border-[#DDD6FE]" },
-          ].map((stat, i) => (
-            <div key={i} className={`text-center p-4 sm:p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-xl shadow-slate-900/5 border group hover:border-[#1597A1]/40 transition-all ${stat.card}`}>
-              <div className="text-lg sm:text-2xl md:text-4xl font-black text-[#1597A1] mb-1 group-hover:scale-110 transition-transform duration-500 truncate">
+    <main className="min-h-screen flex flex-col bg-[#F3ECE3] transition-colors duration-500">
+      <Navbar settings={settings} showFloatingWhatsapp />
+      <Hero localities={localities} />
+
+      {/* Trust strip */}
+      <section className="px-4 md:px-6 py-14 md:py-20">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 rounded-3xl overflow-hidden border border-[#E6DDD0] bg-[#E6DDD0] gap-px shadow-xl shadow-black/5">
+          {stats.map((stat, i) => (
+            <div key={i} className="text-center p-5 sm:p-6 md:p-8 bg-white">
+              <div className="font-serif text-2xl sm:text-3xl md:text-4xl text-primary mb-1 truncate">
                 {stat.value}
               </div>
-              <div className="text-[8px] sm:text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-[0.2em]">
+              <div className="text-[9px] sm:text-[10px] md:text-xs text-[#8A7A68] font-bold uppercase tracking-[0.15em]">
                 {stat.label}
               </div>
             </div>
@@ -37,14 +49,15 @@ export default async function Home() {
       </section>
 
       {/* Featured/Info Section */}
-      <section id="about" className="scroll-mt-24 py-32 bg-[#0F0D0C] transition-colors duration-500">
+      <section id="about" className="scroll-mt-24 py-28 md:py-36 bg-[#1C1008] transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col items-center text-center">
-          <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter">
-            Why We Live in Bangalore?
+          <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary mb-5">Our promise</span>
+          <h2 className="font-serif text-4xl md:text-6xl font-normal text-white mb-6 tracking-tight">
+            Why <span className="italic text-[#D4A373]">UrbanLivingBangalore</span>?
           </h2>
-          <p className="text-slate-400 text-lg md:text-xl max-w-3xl font-medium leading-relaxed">
-            Finding a home shouldn&apos;t be a nightmare. We provide handpicked, zero-brokerage 
-            flats directly from owners, ensuring a smooth and warm experience 
+          <p className="text-slate-400 text-lg md:text-xl max-w-3xl font-normal leading-relaxed">
+            Finding a home shouldn&apos;t be a nightmare. We provide handpicked, zero-brokerage
+            flats directly from owners, ensuring a smooth and warm experience
             for everyone moving to the Silicon Valley of India.
           </p>
         </div>

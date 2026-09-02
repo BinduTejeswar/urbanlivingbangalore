@@ -1,148 +1,139 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { ChevronRight, Search, ShieldCheck } from 'lucide-react'
 import Marquee from './Marquee'
-import { AnimatePresence, motion } from 'framer-motion'
-import Link from 'next/link'
-import { Heart, ChevronRight } from 'lucide-react'
 
-const heroImages = [
-  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=2400&h=1500&q=82",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2400&h=1500&q=82",
-  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=2400&h=1500&q=82",
-  "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=2400&h=1500&q=82",
-  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=2400&h=1500&q=82",
+const BUDGET_OPTIONS = [
+  { label: 'Any budget', value: 'All' },
+  { label: 'Under ₹15k', value: 'Under 15k' },
+  { label: '₹15k – ₹30k', value: '15k-30k' },
+  { label: '₹30k – ₹40k', value: '30k-40k' },
+  { label: '₹40k+', value: '40k+' },
 ]
 
-export default function Hero() {
-  const backgroundImages = useMemo(() => heroImages, [])
-  const [activeImageIndex, setActiveImageIndex] = useState(0)
-  const activeImage = backgroundImages[activeImageIndex % backgroundImages.length]
-  const backgroundMessages = [
-    'Zero Brokerage',
-    'Owner Listed',
-    'Ready to Move',
-    'Verified Homes',
-    'Better Locations',
-    'Managed Flats',
-  ]
+interface HeroProps {
+  localities?: string[]
+}
 
-  useEffect(() => {
-    if (backgroundImages.length < 2) return
+export default function Hero({ localities = [] }: HeroProps) {
+  const router = useRouter()
+  const [locality, setLocality] = useState('All')
+  const [budget, setBudget] = useState('All')
 
-    const interval = window.setInterval(() => {
-      setActiveImageIndex((current) => (current + 1) % backgroundImages.length)
-    }, 6500)
-
-    return () => window.clearInterval(interval)
-  }, [backgroundImages.length])
+  const handleSearch = () => {
+    try {
+      const saved = window.localStorage.getItem('propertyFilters')
+      const existing = saved ? JSON.parse(saved) : {}
+      window.localStorage.setItem('propertyFilters', JSON.stringify({
+        ...existing,
+        locality,
+        budget,
+      }))
+    } catch {
+      // localStorage unavailable (private browsing, etc.) — filters just won't be pre-applied.
+    }
+    router.push('/flats')
+  }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-[#0F0D0C] transition-colors duration-500">
-      {/* Background with Gradient Overlay */}
-      <div className="absolute inset-0 z-0">
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={activeImage}
-            initial={{ opacity: 0, scale: 1.01 }}
-            animate={{ opacity: 1, scale: 1.035 }}
-            exit={{ opacity: 0, scale: 1.04 }}
-            transition={{
-              opacity: { duration: 1.2, ease: "easeInOut" },
-              scale: { duration: 6.5, ease: "easeInOut" },
-            }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={activeImage}
-              alt=""
-              fill
-              priority={activeImageIndex === 0}
-              sizes="100vw"
-              className="object-cover object-center opacity-90 saturate-105"
-            />
-          </motion.div>
-        </AnimatePresence>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/15 to-[#0F0D0C]/80"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,13,12,0.72),rgba(15,13,12,0.34)_42%,rgba(15,13,12,0.08)_72%)]"></div>
+    <section className="relative overflow-hidden bg-[#F3ECE3] pt-36 pb-28 md:pt-44 md:pb-36">
+      {/* Decorative warm glow, no stock photography */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-40 -top-32 h-[560px] w-[560px] rounded-full opacity-70 blur-2xl"
+        style={{ background: 'radial-gradient(circle, rgba(212,163,115,0.55), transparent 70%)' }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-32 bottom-0 h-[380px] w-[380px] rounded-full opacity-50 blur-2xl"
+        style={{ background: 'radial-gradient(circle, rgba(21,151,161,0.18), transparent 70%)' }}
+      />
 
-        <div aria-hidden="true" className="absolute inset-0 overflow-hidden opacity-25 [mask-image:linear-gradient(to_bottom,transparent,black_16%,black_76%,transparent)]">
-          {[0, 1, 2].map((row) => (
-            <motion.div
-              key={row}
-              animate={{ x: row % 2 === 0 ? ['0%', '-33.333%'] : ['-33.333%', '0%'] }}
-              transition={{
-                duration: 34 + row * 8,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className={[
-                "absolute flex w-max whitespace-nowrap text-white/15 drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]",
-                "font-black uppercase tracking-[0.26em]",
-                row === 0 ? "top-[18%] text-2xl md:text-5xl -rotate-6" : "",
-                row === 1 ? "top-[44%] text-xl md:text-4xl rotate-3" : "",
-                row === 2 ? "top-[68%] text-2xl md:text-6xl -rotate-3" : "",
-              ].join(' ')}
-            >
-              {[...backgroundMessages, ...backgroundMessages, ...backgroundMessages].map((message, index) => (
-                <span key={`${message}-${row}-${index}`} className="mx-8 md:mx-12">
-                  {message}
-                </span>
-              ))}
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-6 py-12 text-center">
-        <motion.div 
+      <div className="relative z-10 mx-auto max-w-4xl px-4 md:px-6 text-center">
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex -translate-y-2 items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mb-8 shadow-xl shadow-black/25 text-white border border-white/20"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-primary"
         >
-          <Heart className="w-3 h-3 fill-primary" /> Find Your Home
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Zero Brokerage, Always
         </motion.div>
 
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] mb-7 tracking-tighter text-white drop-shadow-[0_3px_20px_rgba(0,0,0,0.75)]"
+          transition={{ delay: 0.08 }}
+          className="font-serif text-5xl font-normal leading-[1.02] tracking-tight text-[#1C1008] sm:text-6xl md:text-7xl"
         >
-          Find a Home <br/>
-          <span className="text-[#D4A373]">Without the Brokerage.</span>
+          Bangalore living,
+          <br />
+          <span className="italic text-primary">minus the agent.</span>
         </motion.h1>
 
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-lg md:text-2xl text-white mb-12 leading-relaxed max-w-2xl mx-auto font-bold drop-shadow-[0_2px_14px_rgba(0,0,0,0.65)]"
+          transition={{ delay: 0.16 }}
+          className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-[#6B5D4F] md:text-lg"
         >
-          <span className="bg-black/40 box-decoration-clone px-1.5 rounded-md">
-            Owner-listed flats. No agents, no stress.
-          </span>
+          Handpicked flats listed directly by owners across Bangalore. Browse, compare and move in — no brokerage, no middlemen, no drama.
         </motion.p>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex flex-col md:flex-row items-center justify-center gap-4"
+          transition={{ delay: 0.24 }}
+          className="mx-auto mt-10 flex max-w-xl flex-col gap-2 rounded-3xl border border-[#E6DDD0] bg-white p-2 shadow-xl shadow-black/5 sm:flex-row sm:items-stretch"
         >
-          <Link 
-            href="/flats"
-            className="group bg-primary text-white px-10 py-5 rounded-[2rem] font-black hover:bg-orange-600 transition-all text-sm md:text-lg shadow-2xl shadow-orange-900/40 hover:scale-105 active:scale-95 flex items-center gap-2"
+          <div className="flex-1 rounded-2xl px-5 py-3 text-left sm:border-r sm:border-[#EDE6DB]">
+            <label htmlFor="hero-locality" className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#8A7A68]">
+              Locality
+            </label>
+            <select
+              id="hero-locality"
+              value={locality}
+              onChange={(e) => setLocality(e.target.value)}
+              className="w-full appearance-none bg-transparent text-sm font-semibold text-[#1C1008] outline-none"
+            >
+              <option value="All">Anywhere in Bangalore</option>
+              {localities.map((area) => (
+                <option key={area} value={area}>{area}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1 rounded-2xl px-5 py-3 text-left">
+            <label htmlFor="hero-budget" className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#8A7A68]">
+              Budget
+            </label>
+            <select
+              id="hero-budget"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="w-full appearance-none bg-transparent text-sm font-semibold text-[#1C1008] outline-none"
+            >
+              {BUDGET_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSearch}
+            className="group flex items-center justify-center gap-2 rounded-2xl bg-primary px-7 py-4 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-95 sm:py-0"
           >
-            Browse Flats
-            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+            <Search className="h-4 w-4" />
+            Search
+            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </button>
         </motion.div>
       </div>
 
-      {/* Signboard Marquee at the bottom */}
-      <div className="absolute bottom-0 left-0 w-full mb-12">
+      <div className="relative z-10 mt-16 md:mt-20">
         <Marquee />
       </div>
     </section>

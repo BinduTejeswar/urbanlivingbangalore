@@ -17,7 +17,7 @@ export const siteSettings = defineType({
       title: 'WhatsApp Message',
       type: 'text',
       description: 'Default pre-filled WhatsApp message',
-      initialValue: "Hi, I'm interested in a property listed on We Live in Bangalore",
+      initialValue: "Hi, I'm interested in a property listed on UrbanLivingBangalore",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -32,7 +32,7 @@ export const siteSettings = defineType({
       title: 'Admin Name',
       type: 'string',
       description: 'Name shown on contact section',
-      initialValue: 'We Live in Bangalore Team',
+      initialValue: 'UrbanLivingBangalore Team',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
