@@ -1,4 +1,4 @@
-# We Live in Bangalore
+# UrbanLivingBangalore
 
 A zero-brokerage Bangalore rentals site for browsing owner-listed flats, viewing property details, and contacting owners directly through WhatsApp.
 

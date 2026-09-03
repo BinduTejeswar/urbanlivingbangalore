@@ -247,6 +247,44 @@ export const property = defineType({
       ],
     }),
     defineField({
+      name: 'unitTypes',
+      title: 'Available Unit Types (optional)',
+      type: 'array',
+      description: 'Only fill this in when ONE listing offers more than one configuration at different prices (e.g. a building with both 1BHK and 2BHK units available). Each entry shows as its own priced card on the property page, in addition to the main Property Type and Pricing above. Leave empty for a normal single-configuration listing.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'unitType',
+          fields: [
+            defineField({
+              name: 'type',
+              title: 'Type',
+              type: 'string',
+              options: {
+                list: [
+                  { title: '1RK', value: '1RK' },
+                  { title: '1BHK', value: '1BHK' },
+                  { title: '2BHK', value: '2BHK' },
+                  { title: '3BHK', value: '3BHK' },
+                ],
+              },
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({ name: 'monthlyRent', title: 'Monthly Rent', type: 'number', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'depositAmount', title: 'Deposit Amount', type: 'number', validation: (Rule) => Rule.required() }),
+          ],
+          preview: {
+            select: { type: 'type', rent: 'monthlyRent' },
+            prepare({ type, rent }) {
+              return {
+                title: `${type || 'Unit'} \u2014 \u20b9${typeof rent === 'number' ? rent.toLocaleString('en-IN') : '\u2014'}/mo`,
+              }
+            },
+          },
+        }),
+      ],
+    }),
+    defineField({
       name: 'furnishingStatus',
       title: 'Furnishing Status',
       type: 'string',

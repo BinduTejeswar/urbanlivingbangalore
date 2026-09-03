@@ -3,15 +3,19 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: #F97316;
-  --color-accent: #F59E0B;
-  
+  --color-primary: #C2410C;
+  --color-accent: #C2410C;
+  --color-secondary: #1597A1;
+
   /* Map Tailwind background/foreground to our CSS variables */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
 }
 
-/* Light Mode (Cozy & Welcoming) */
+/* Light Mode (Warm & Editorial) */
 :root {
   --background: #F3ECE3;
   --foreground: #1C1008;
@@ -26,9 +30,13 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-quicksand), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
   transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.font-serif {
+  font-family: var(--font-instrument-serif), Georgia, serif;
 }
 
 @layer base {
@@ -43,4 +51,45 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Dual-thumb rent range slider */
+.range-slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+}
+.range-slider-input::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: transparent;
+  height: 100%;
+}
+.range-slider-input::-moz-range-track {
+  background: transparent;
+  height: 100%;
+}
+.range-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  background: #C2410C;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(28, 16, 8, 0.28);
+  cursor: pointer;
+  margin-top: 0;
+}
+.range-slider-input::-moz-range-thumb {
+  pointer-events: auto;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  background: #C2410C;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(28, 16, 8, 0.28);
+  cursor: pointer;
 }

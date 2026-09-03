@@ -8,7 +8,7 @@ import { Menu, MessageCircle, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 
-const WHATSAPP_MESSAGE = "Hi, I'm interested in booking a flat listed on We Live in Bangalore."
+const WHATSAPP_MESSAGE = "Hi, I'm interested in booking a flat listed on UrbanLivingBangalore."
 
 interface NavbarProps {
   variant?: 'default' | 'dark'
@@ -69,16 +69,16 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
   }, [isMenuOpen, shouldAutoHideMobileNavbar])
 
   const navLinks = [
-    { name: 'HOME', href: '/' },
-    { name: 'ABOUT', href: '/#about' },
-    { name: 'AMENITIES', href: '/#amenities' },
-    { name: 'FLATS', href: '/flats' },
-    { name: 'GALLERY', href: '/#gallery' },
-    { name: 'CONTACT', href: '/#contact' },
+    { name: 'Home', href: '/' },
+    { name: 'Explore Flats', href: '/flats' },
+    { name: 'Amenities', href: '/#amenities' },
+    { name: 'About', href: '/#about' },
+    { name: 'Gallery', href: '/#gallery' },
+    { name: 'Contact', href: '/#contact' },
   ]
 
-  const navClass = `fixed top-0 w-full z-[100] border-b border-[#D9D2CA] bg-[#F2F0ED]/95 backdrop-blur-xl transition-all duration-300 ${
-    isScrolled || isMenuOpen ? 'py-2' : 'py-2.5'
+  const navClass = `fixed top-0 w-full z-[100] border-b border-[#E6DDD0] bg-[#F3ECE3]/92 backdrop-blur-xl transition-all duration-300 ${
+    isScrolled || isMenuOpen ? 'py-3' : 'py-4'
   } ${
     shouldAutoHideMobileNavbar && isMobileNavHidden && !isMenuOpen ? '-translate-y-full md:translate-y-0' : 'translate-y-0'
   }`
@@ -89,7 +89,7 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
       return `text-base font-semibold ${isActive ? 'text-primary' : 'text-[#4A403A]'}`
     }
 
-    return `text-sm font-bold tracking-wide transition-colors ${isActive ? 'text-primary' : 'text-[#4A403A] hover:text-primary'}`
+    return `text-sm font-semibold transition-colors ${isActive ? 'text-[#1C1008]' : 'text-[#6B5D4F] hover:text-[#1C1008]'}`
   }
 
   return (
@@ -99,8 +99,8 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
           <Link href="/" className="flex items-center gap-2 text-lg font-black tracking-tighter text-[#2A1B13] md:text-xl">
             <div className="relative h-10 w-10 overflow-hidden rounded-sm shadow-lg shadow-black/10">
               <Image
-                src="/logo-circle.png"
-                alt="We Live in Bangalore logo"
+                src="/logo-mark.png"
+                alt="UrbanLivingBangalore logo"
                 fill
                 sizes="40px"
                 className="object-contain"
@@ -108,15 +108,15 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
               />
             </div>
             <span className="hidden sm:inline">
-              WeLiveIn<span className="text-[#1597A1]">Bangalore</span>
+              Urban<span className="font-serif font-normal italic text-primary">Living</span>Bangalore
             </span>
           </Link>
-          
+
           <div className="hidden items-center gap-8 md:flex">
             {navLinks.map((link) => (
-              <Link 
-                key={link.name} 
-                href={link.href} 
+              <Link
+                key={link.name}
+                href={link.href}
                 className={getLinkClass(link.href)}
               >
                 {link.name}
@@ -127,7 +127,7 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
           <div className="hidden md:block">
             <Link
               href="/#contact"
-              className="inline-flex items-center gap-2 rounded-full bg-[#141210] px-6 py-3 text-sm font-black text-white shadow-xl shadow-black/20 transition-transform hover:scale-[1.03] active:scale-95"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg shadow-orange-950/10 transition-transform hover:scale-[1.03] active:scale-95"
             >
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_0_rgba(52,211,153,0.75)] animate-pulse" />
               Book Now
@@ -165,8 +165,8 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
                 >
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-sm shadow-lg shadow-black/10">
                     <Image
-                      src="/logo-circle.png"
-                      alt="We Live in Bangalore logo"
+                      src="/logo-mark.png"
+                      alt="UrbanLivingBangalore logo"
                       fill
                       sizes="56px"
                       className="object-contain"
@@ -174,7 +174,7 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
                     />
                   </div>
                   <span className="min-w-0 truncate">
-                    WeLiveIn<span className="text-[#1597A1]">Bangalore</span>
+                    Urban<span className="font-serif font-normal italic text-primary">Living</span>Bangalore
                   </span>
                 </Link>
                 <button
@@ -196,7 +196,7 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
                       onClick={() => setIsMenuOpen(false)}
                       className={getLinkClass(link.href, true)}
                     >
-                      {link.name.charAt(0) + link.name.slice(1).toLowerCase()}
+                      {link.name}
                     </Link>
                   ))}
                 </div>
@@ -204,7 +204,7 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
                 <Link
                   href="/#contact"
                   onClick={() => setIsMenuOpen(false)}
-                  className="mt-10 flex h-12 items-center justify-center rounded-lg bg-[#1E1916] px-5 text-base font-black text-white shadow-lg shadow-black/15"
+                  className="mt-10 flex h-12 items-center justify-center rounded-full bg-primary px-5 text-base font-bold text-white shadow-lg shadow-orange-950/10"
                 >
                   Book a Visit
                 </Link>

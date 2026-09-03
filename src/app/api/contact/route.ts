@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const adminEmail = settings?.contactEmail || 'admin@example.com'
 
     const { data, error } = await resend.emails.send({
-      from: 'We Live in Bangalore <onboarding@resend.dev>',
+      from: 'UrbanLivingBangalore <onboarding@resend.dev>',
       to: adminEmail,
       subject: `New Enquiry: ${propertyName}`,
       html: `

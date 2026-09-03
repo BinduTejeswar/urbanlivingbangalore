@@ -1,20 +1,12 @@
 'use client'
 
 import { Property } from '@/types'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
+import { Building2, IndianRupee, MapPin, Sofa, SquareParking } from 'lucide-react'
 import type { PropertyFilters } from './FilterBar'
-
-type FilterOption = {
-  label: string
-  value: string
-}
-
-type FilterCategory = {
-  key: keyof PropertyFilters
-  label: string
-  options: FilterOption[]
-}
+import { FLAT_TYPE_OPTIONS, FURNISHING_OPTIONS, PARKING_OPTIONS, toggleFilterValue } from './FilterBar'
+import { CheckboxPill, FilterSectionHeader, RentRangeSlider } from './FilterControls'
 
 interface MobileFilterSheetProps {
   properties: Property[]
@@ -39,80 +31,13 @@ export default function MobileFilterSheet({
       ...(property.location.nearbyAreas || []),
     ]).map((area) => area?.trim()).filter(Boolean)
 
-    return Array.from(new Set(allLocalities)).sort()
+    return ['All', ...Array.from(new Set(allLocalities)).sort()]
   }, [properties])
 
-  const categories = useMemo<FilterCategory[]>(() => [
-    {
-      key: 'locality',
-      label: 'Location',
-      options: [
-        { label: 'All Locations', value: 'All' },
-        ...localities.map((locality) => ({ label: locality, value: locality })),
-      ],
-    },
-    {
-      key: 'budget',
-      label: 'Budget',
-      options: [
-        { label: 'All Budgets', value: 'All' },
-        { label: 'Under ₹15k', value: 'Under 15k' },
-        { label: '₹15k - ₹30k', value: '15k-30k' },
-        { label: '₹30k - ₹40k', value: '30k-40k' },
-        { label: '₹40k+', value: '40k+' },
-      ],
-    },
-    {
-      key: 'flatType',
-      label: 'Flat Type',
-      options: [
-        { label: 'All Types', value: 'All' },
-        { label: '1RK', value: '1RK' },
-        { label: '1BHK', value: '1BHK' },
-        { label: '2BHK', value: '2BHK' },
-        { label: '3BHK', value: '3BHK' },
-      ],
-    },
-    {
-      key: 'furnishing',
-      label: 'Furnishing',
-      options: [
-        { label: 'Any Furnishing', value: 'All' },
-        { label: 'Fully Furnished', value: 'Fully Furnished' },
-        { label: 'Semi Furnished', value: 'Semi Furnished' },
-      ],
-    },
-    {
-      key: 'parking',
-      label: 'Parking',
-      options: [
-        { label: 'Any', value: 'All' },
-        { label: 'Car Parking', value: 'Car Parking' },
-        { label: 'Bike Parking', value: 'Bike Parking' },
-        { label: 'No Parking', value: 'No' },
-      ],
-    },
-    {
-      key: 'sortBy',
-      label: 'Sort By',
-      options: [
-        { label: 'Budget Low to High', value: 'Budget Low' },
-        { label: 'Budget High to Low', value: 'Budget High' },
-      ],
-    },
-  ], [localities])
-
-  const [activeKey, setActiveKey] = useState<keyof PropertyFilters>('locality')
-  const activeCategory = categories.find((category) => category.key === activeKey) || categories[0]
-
-  const handleSelect = (value: string) => {
-    setFilters((current) => ({ ...current, [activeCategory.key]: value }))
-  }
-
   return (
-    <div className="flex h-[82vh] max-h-[680px] flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl">
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4">
-        <h2 className="text-lg font-black text-[#1C1008]">Filters</h2>
+    <div className="flex h-[86vh] max-h-[760px] flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#E6DDD0] px-5">
+        <h2 className="text-lg font-black tracking-tight text-[#1C1008]">Filters</h2>
         <button
           type="button"
           onClick={onReset}
@@ -122,58 +47,85 @@ export default function MobileFilterSheet({
         </button>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[38%_62%]">
-        <div className="overflow-y-auto border-r border-slate-200 bg-slate-50 p-2">
-          {categories.map((category) => {
-            const isActive = activeCategory.key === category.key
-            const hasValue = filters[category.key] !== 'All' && filters[category.key] !== 'Budget Low'
-
-            return (
-              <button
-                key={category.key}
-                type="button"
-                onClick={() => setActiveKey(category.key)}
-                className={`relative mb-1 flex min-h-12 w-full items-center rounded-lg px-3 text-left text-sm font-bold transition-colors ${
-                  isActive
-                    ? 'bg-slate-200 text-[#1C1008]'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`}
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+        <div className="flex flex-col gap-6">
+          <div>
+            <FilterSectionHeader icon={MapPin} label="Locality" />
+            <div className="relative">
+              <select
+                value={filters.locality}
+                onChange={(e) => setFilters((prev) => ({ ...prev, locality: e.target.value }))}
+                className="w-full appearance-none rounded-xl border border-[#E6DDD0] bg-white px-4 py-3 text-sm font-bold text-[#1C1008] outline-none focus:ring-2 focus:ring-primary"
               >
-                <span>{category.label}</span>
-                {hasValue && (
-                  <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
-                )}
-              </button>
-            )
-          })}
-        </div>
+                {localities.map((locality) => (
+                  <option key={locality} value={locality}>{locality === 'All' ? 'All Locations' : locality}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <div className="min-w-0 overflow-y-auto bg-white py-3">
-          {activeCategory.options.map((option) => {
-            const isSelected = filters[activeCategory.key] === option.value
+          <div className="h-px bg-[#EDE6DB]" />
 
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleSelect(option.value)}
-                className="flex min-h-14 w-full items-center gap-3 px-5 text-left text-base font-bold text-[#1C1008] transition-colors hover:bg-[#F6F8F4]"
-              >
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                    isSelected ? 'border-primary' : 'border-slate-300'
-                  }`}
-                >
-                  {isSelected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
-                </span>
-                <span className="min-w-0 truncate">{option.label}</span>
-              </button>
-            )
-          })}
+          <div>
+            <FilterSectionHeader icon={IndianRupee} label="Monthly Rent" />
+            <RentRangeSlider
+              minValue={filters.minRent}
+              maxValue={filters.maxRent}
+              onChange={(min, max) => setFilters((prev) => ({ ...prev, minRent: min, maxRent: max }))}
+            />
+          </div>
+
+          <div className="h-px bg-[#EDE6DB]" />
+
+          <div>
+            <FilterSectionHeader icon={Building2} label="Flat Type" />
+            <div className="grid grid-cols-2 gap-2">
+              {FLAT_TYPE_OPTIONS.map((option) => (
+                <CheckboxPill
+                  key={option}
+                  label={option}
+                  checked={filters.flatTypes.includes(option)}
+                  onToggle={() => setFilters((prev) => ({ ...prev, flatTypes: toggleFilterValue(prev.flatTypes, option) }))}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-[#EDE6DB]" />
+
+          <div>
+            <FilterSectionHeader icon={Sofa} label="Furnishing" />
+            <div className="flex flex-col gap-2">
+              {FURNISHING_OPTIONS.map((option) => (
+                <CheckboxPill
+                  key={option}
+                  label={option}
+                  checked={filters.furnishings.includes(option)}
+                  onToggle={() => setFilters((prev) => ({ ...prev, furnishings: toggleFilterValue(prev.furnishings, option) }))}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-[#EDE6DB]" />
+
+          <div>
+            <FilterSectionHeader icon={SquareParking} label="Parking" />
+            <div className="flex flex-col gap-2">
+              {PARKING_OPTIONS.map((option) => (
+                <CheckboxPill
+                  key={option}
+                  label={option}
+                  checked={filters.parking.includes(option)}
+                  onToggle={() => setFilters((prev) => ({ ...prev, parking: toggleFilterValue(prev.parking, option) }))}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid shrink-0 grid-cols-[1fr_1.15fr] gap-4 border-t border-slate-200 bg-white px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+      <div className="grid shrink-0 grid-cols-[1fr_1.15fr] gap-4 border-t border-[#E6DDD0] bg-white px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         <button
           type="button"
           onClick={onClose}

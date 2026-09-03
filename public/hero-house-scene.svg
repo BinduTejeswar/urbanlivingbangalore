@@ -1,0 +1,85 @@
+<svg width="1600" height="560" viewBox="0 0 1600 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F6EFE6"/>
+      <stop offset="0.55" stop-color="#F1E4D2"/>
+      <stop offset="1" stop-color="#F0D9BE"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#F2B98C" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#F2B98C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EFDFC7"/>
+      <stop offset="1" stop-color="#E4CFA9"/>
+    </linearGradient>
+    <linearGradient id="groundEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#DEC7A6" stop-opacity="0"/>
+      <stop offset="1" stop-color="#DEC7A6" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="fadeTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F3ECE3" stop-opacity="1"/>
+      <stop offset="0.4" stop-color="#F3ECE3" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- soft warm sky -->
+  <rect x="0" y="0" width="1600" height="560" fill="url(#sky)"/>
+  <circle cx="1260" cy="150" r="320" fill="url(#sunGlow)"/>
+
+  <!-- distant tree line, very faint -->
+  <g opacity="0.35">
+    <circle cx="120" cy="380" r="46" fill="#A9B08C"/>
+    <circle cx="175" cy="392" r="34" fill="#A9B08C"/>
+    <circle cx="1500" cy="360" r="52" fill="#A9B08C"/>
+    <circle cx="1550" cy="378" r="30" fill="#A9B08C"/>
+  </g>
+
+  <!-- ground -->
+  <rect x="0" y="440" width="1600" height="20" fill="url(#groundEdge)"/>
+  <rect x="0" y="452" width="1600" height="108" fill="url(#ground)"/>
+
+  <!-- soft grounding shadows -->
+  <ellipse cx="245" cy="462" rx="130" ry="12" fill="#C9A876" opacity="0.35"/>
+  <ellipse cx="1250" cy="462" rx="220" ry="14" fill="#C9A876" opacity="0.4"/>
+
+  <!-- secondary, smaller house (background, left) -->
+  <g opacity="0.55">
+    <rect x="130" y="330" width="220" height="130" fill="#E7D7C0"/>
+    <rect x="130" y="322" width="220" height="12" fill="#C2410C" opacity="0.8"/>
+    <rect x="165" y="360" width="34" height="34" fill="#1597A1" opacity="0.45"/>
+    <rect x="225" y="360" width="34" height="34" fill="#1597A1" opacity="0.45"/>
+    <rect x="285" y="380" width="30" height="80" fill="#C2410C" opacity="0.55"/>
+  </g>
+
+  <!-- primary house, right of center (two-volume modern massing) -->
+  <g>
+    <!-- lower wing -->
+    <rect x="900" y="360" width="210" height="100" fill="#DEC7A6"/>
+    <rect x="900" y="352" width="210" height="10" fill="#C2410C"/>
+
+    <!-- main volume -->
+    <rect x="1060" y="260" width="360" height="200" fill="#F1E4D2"/>
+    <rect x="1060" y="250" width="360" height="12" fill="#C2410C"/>
+
+    <!-- window grid, soft teal -->
+    <rect x="1100" y="300" width="40" height="40" rx="2" fill="#1597A1" opacity="0.55"/>
+    <rect x="1160" y="300" width="40" height="40" rx="2" fill="#1597A1" opacity="0.4"/>
+    <rect x="1100" y="360" width="40" height="40" rx="2" fill="#1597A1" opacity="0.4"/>
+    <rect x="1220" y="330" width="46" height="80" rx="2" fill="#1597A1" opacity="0.3"/>
+    <rect x="1300" y="300" width="40" height="40" rx="2" fill="#1597A1" opacity="0.55"/>
+    <rect x="1360" y="300" width="40" height="40" rx="2" fill="#1597A1" opacity="0.4"/>
+    <rect x="1300" y="360" width="100" height="40" rx="2" fill="#1597A1" opacity="0.3"/>
+
+    <!-- door -->
+    <rect x="960" y="400" width="44" height="60" fill="#C2410C" opacity="0.85"/>
+
+    <!-- simple potted plant beside the door -->
+    <circle cx="880" cy="418" r="22" fill="#A9B08C" opacity="0.75"/>
+    <circle cx="862" cy="430" r="16" fill="#A9B08C" opacity="0.6"/>
+    <rect x="874" y="440" width="12" height="20" fill="#8A7A68" opacity="0.5"/>
+  </g>
+
+  <!-- fade so it blends into the cream page background -->
+  <rect x="0" y="0" width="1600" height="560" fill="url(#fadeTop)"/>
+</svg>

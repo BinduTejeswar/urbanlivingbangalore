@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
-import { Quicksand } from "next/font/google";
+import { Work_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
-const quicksand = Quicksand({
-  variable: "--font-quicksand",
+const workSans = Work_Sans({
+  variable: "--font-work-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
-  title: "We Live in Bangalore | No Brokerage Flats",
+  title: "UrbanLivingBangalore | Bangalore Rentals, Minus the Agent",
   description: "Find your perfect home in Bangalore — no agents, no brokerage, just homes directly from owners.",
 };
 
@@ -24,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body
-        className={`${quicksand.variable} antialiased font-sans`}
+        className={`${workSans.variable} ${instrumentSerif.variable} antialiased font-sans`}
       >
         <ThemeProvider>
           <AppErrorBoundary>

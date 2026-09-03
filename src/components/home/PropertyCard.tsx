@@ -4,7 +4,7 @@ import { Property, SiteSettings } from '@/types'
 import { urlForImage } from '@/sanity/lib/image'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Share2, MapPin, IndianRupee, CheckCircle2, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, Fingerprint, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Share2, MapPin, IndianRupee, CheckCircle2, Heart, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, Fingerprint, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -12,6 +12,25 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface PropertyCardProps {
   property: Property
   settings?: SiteSettings | null
+  isSaved?: boolean
+  onToggleSave?: (propertyId: string) => void
+}
+
+const getAvailability = (availableFrom?: string): { label: string; isNow: boolean } | null => {
+  if (!availableFrom) return null
+
+  const date = new Date(availableFrom)
+  if (Number.isNaN(date.getTime())) return null
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  if (date <= today) return { label: 'Available now', isNow: true }
+
+  return {
+    label: `From ${date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+    isNow: false,
+  }
 }
 
 // Map facility strings to Lucide icons
@@ -66,7 +85,7 @@ function normalizeWhatsappNumber(phoneNumber?: string) {
   return digits
 }
 
-export default function PropertyCard({ property, settings }: PropertyCardProps) {
+export default function PropertyCard({ property, settings, isSaved = false, onToggleSave }: PropertyCardProps) {
   const [showToast, setShowToast] = useState(false)
   const [isCardHovered, setIsCardHovered] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -78,6 +97,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
       ?.filter((image) => image.asset?._ref)
       .map((image) => urlForImage(image).width(800).url()) || []
   ), [property.images])
+  const availability = useMemo(() => getAvailability(property.availableFrom), [property.availableFrom])
   const activeImageUrl = imageUrls[activeImageIndex % imageUrls.length]
   const hasMultipleImages = imageUrls.length > 1
   const primaryArea = property.location.area?.trim()
@@ -208,8 +228,14 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
     if (!whatsappNumber) return
 
     const url = `${window.location.origin}/flats/${property.slug.current}`
-    const message = `${settings?.whatsappMessage || "Hi, I'm interested in a flat listed on We Live in Bangalore."}\n\nProperty: ${property.title}\nLink: ${url}`
+    const message = `${settings?.whatsappMessage || "Hi, I'm interested in a flat listed on UrbanLivingBangalore."}\n\nProperty: ${property.title}\nLink: ${url}`
     window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleToggleSave = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onToggleSave?.(property._id)
   }
 
   return (
@@ -223,7 +249,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         onFocus={() => setIsCardHovered(true)}
         onBlur={stopImageSlider}
         onClickCapture={handleCardClickCapture}
-        className="relative bg-white rounded-[2rem] overflow-hidden border border-[#DDE8DD] hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(35,55,35,0.1)] transition-all duration-500 flex flex-col h-full"
+        className="relative bg-white rounded-[2rem] overflow-hidden border border-[#E6DDD0] hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(28,16,8,0.1)] transition-all duration-500 flex flex-col h-full"
       >
         {/* Image Container - Slightly shorter aspect ratio */}
         <div
@@ -254,16 +280,27 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
               </motion.div>
             </AnimatePresence>
           ) : (
-            <div className="w-full h-full bg-[#EEF4EE]" />
+            <div className="h-full w-full bg-gradient-to-br from-primary/15 via-[#F1E6D6] to-secondary/15" />
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-          {/* Rent Badge */}
-          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-[#1C1008] px-3 py-1.5 rounded-xl font-black flex items-center gap-1 shadow-2xl border border-white/10 text-sm">
-            <IndianRupee className="w-3 h-3" />
-            {property.pricing.monthlyRent.toLocaleString('en-IN')}
-            <span className="text-[9px] text-slate-500 font-bold uppercase ml-1">/ mo</span>
+          {/* Rent + availability badges */}
+          <div className="absolute left-4 top-4 flex flex-col items-start gap-2">
+            <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/95 px-3 py-1.5 text-sm font-black text-[#1C1008] shadow-2xl backdrop-blur-md">
+              <IndianRupee className="w-3 h-3" />
+              {property.pricing.monthlyRent.toLocaleString('en-IN')}
+              <span className="ml-1 text-[9px] font-bold uppercase text-slate-500">/ mo</span>
+            </div>
+            {availability && (
+              <div
+                className={`rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white shadow-lg backdrop-blur-md ${
+                  availability.isNow ? 'bg-secondary/95' : 'bg-[#4A403A]/90'
+                }`}
+              >
+                {availability.label}
+              </div>
+            )}
           </div>
 
           {property.isRecommended && (
@@ -314,18 +351,33 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         </div>
 
         {/* Content - Compacted padding */}
-        <div className="p-6 flex flex-col flex-grow">
+        <div className="p-5 md:p-6 flex flex-col flex-grow">
           <div className="mb-4">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2">
               <h3 className="min-w-0 flex-1 font-black text-xl text-[#1C1008] leading-tight group-hover:text-primary transition-colors line-clamp-1">
                 {property.title}
               </h3>
+              {onToggleSave && (
+                <button
+                  type="button"
+                  onClick={handleToggleSave}
+                  aria-label={isSaved ? 'Remove from saved flats' : 'Save this flat'}
+                  title={isSaved ? 'Remove from saved' : 'Save flat'}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-95 ${
+                    isSaved
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-[#E6DDD0] bg-[#F1E6D6] text-primary hover:border-primary/40 hover:bg-primary hover:text-white'
+                  }`}
+                >
+                  <Heart className={`h-4 w-4 ${isSaved ? 'fill-white' : ''}`} />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleShare}
                 aria-label="Share property"
                 title="Share property"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#DDE8DD] bg-[#EEF4EE] text-primary transition-all hover:border-primary/40 hover:bg-primary hover:text-white active:scale-95"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E6DDD0] bg-[#F1E6D6] text-primary transition-all hover:border-primary/40 hover:bg-primary hover:text-white active:scale-95"
               >
                 <Share2 className="h-4 w-4" />
               </button>
@@ -351,13 +403,13 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
               {property.facilities?.slice(0, 4).map((fac) => {
                 const Icon = facilityIcons[fac] || CheckCircle2
                 return (
-                  <div key={fac} className="bg-[#EEF4EE] p-1.5 rounded-lg border border-[#DDE8DD]" title={fac}>
+                  <div key={fac} className="bg-[#F1E6D6] p-1.5 rounded-lg border border-[#E6DDD0]" title={fac}>
                     <Icon className="w-3.5 h-3.5 text-primary" />
                   </div>
                 )
               })}
               {property.facilities && property.facilities.length > 4 && (
-                <div className="bg-[#EEF4EE] px-2 py-1.5 rounded-lg border border-[#DDE8DD] text-[9px] font-black text-primary">
+                <div className="bg-[#F1E6D6] px-2 py-1.5 rounded-lg border border-[#E6DDD0] text-[9px] font-black text-primary">
                   +{property.facilities.length - 4}
                 </div>
               )}
@@ -376,7 +428,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
             )}
           </div>
 
-          <div className="mt-auto pt-4 border-t border-[#E2EAE2] flex items-center justify-between gap-4">
+          <div className="mt-auto pt-4 border-t border-[#E6DDD0] flex items-center justify-between gap-4">
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sqft</span>
               <span className="text-[#1C1008] font-bold text-xs">{property.pricing.squareFeet}</span>
