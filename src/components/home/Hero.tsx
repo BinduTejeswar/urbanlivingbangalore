@@ -45,7 +45,7 @@ export default function Hero({ localities = [] }: HeroProps) {
         src="/hero-house-scene.svg"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[320px] w-full object-cover object-bottom opacity-95 md:h-[420px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[280px] w-full object-cover object-top opacity-95 md:h-[400px]"
       />
 
       {/* Decorative warm glow, no stock photography */}

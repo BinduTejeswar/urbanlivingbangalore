@@ -1,6 +1,5 @@
 import { getCachedProperties, getCachedSiteSettings } from '@/sanity/lib/fetchers'
 import ListingGrid from '@/components/home/ListingGrid'
-import ComfortAmenities from '@/components/home/ComfortAmenities'
 import Navbar from '@/components/ui/Navbar'
 import Footer from '@/components/ui/Footer'
 import type { Metadata } from 'next'
@@ -22,7 +21,6 @@ export default async function FlatsPage() {
     <main className="min-h-screen flex flex-col bg-[#F3ECE3] transition-colors duration-500">
       <Navbar settings={settings} />
       <ListingGrid properties={properties || []} settings={settings} />
-      <ComfortAmenities />
       <Footer settings={settings} compact />
     </main>
   )

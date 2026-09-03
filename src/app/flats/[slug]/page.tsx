@@ -1,19 +1,22 @@
-import { getCachedPropertyBySlug, getCachedSiteSettings } from '@/sanity/lib/fetchers'
+import { getCachedProperties, getCachedPropertyBySlug, getCachedSiteSettings } from '@/sanity/lib/fetchers'
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import ImageGallery from '@/components/property/gallery/ImageGallery'
 import NearbyPlacesSection from '@/components/property/NearbyPlacesSection'
-import PropertyDetailsPanel from '@/components/property/PropertyDetailsPanel'
+import PropertyComfortsCard from '@/components/property/PropertyComfortsCard'
+import PropertyFAQ from '@/components/property/PropertyFAQ'
+import PropertyQuickFacts from '@/components/property/PropertyQuickFacts'
+import UnitTypesCard from '@/components/property/UnitTypesCard'
 import PricingDetailsPanel, { type ContactLink } from '@/components/property/PricingDetailsPanel'
-import PropertyAmenities from '@/components/property/PropertyAmenities'
 import SharePopover from '@/components/property/SharePopover'
-import UtilityBillsCard from '@/components/property/UtilityBillsCard'
+import SimilarProperties from '@/components/property/SimilarProperties'
 import Footer from '@/components/ui/Footer'
 import Navbar from '@/components/ui/Navbar'
 import Link from 'next/link'
 import { MapPin, ChevronRight } from 'lucide-react'
 import { Metadata } from 'next'
 import { urlForImage } from '@/sanity/lib/image'
+import type { Property } from '@/types'
 
 interface PropertyPageProps {
   params: Promise<{ slug: string }>
@@ -54,6 +57,32 @@ const getNearbyAreas = (property: { location: { area: string; nearbyAreas?: stri
       .map((area) => area?.trim())
       .filter((area): area is string => Boolean(area) && area.toLowerCase() !== primaryArea)
   ))
+}
+
+const getSimilarProperties = (allProperties: Property[], current: Property, limit = 3): Property[] => {
+  const currentAreas = new Set(
+    getDisplayAreas(current).map((area) => area.toLowerCase())
+  )
+
+  const scored = allProperties
+    .filter((candidate) => candidate._id !== current._id)
+    .map((candidate) => {
+      const candidateAreas = getDisplayAreas(candidate).map((area) => area.toLowerCase())
+      const sharesArea = candidateAreas.some((area) => currentAreas.has(area))
+      const samePrimaryArea = candidate.location.area?.trim().toLowerCase() === current.location.area?.trim().toLowerCase()
+      const sameType = candidate.propertyType === current.propertyType
+
+      let score = 0
+      if (samePrimaryArea) score += 3
+      else if (sharesArea) score += 2
+      if (sameType) score += 1
+
+      return { candidate, score }
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+
+  return scored.slice(0, limit).map(({ candidate }) => candidate)
 }
 
 const getRequestOrigin = async () => {
@@ -131,13 +160,15 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
 
 export default async function PropertyPage({ params }: PropertyPageProps) {
   const { slug } = await params
-  const [property, settings] = await Promise.all([
+  const [property, settings, allProperties] = await Promise.all([
     getCachedPropertyBySlug(slug),
     getCachedSiteSettings(),
+    getCachedProperties(),
   ])
 
   if (!property) notFound()
 
+  const similarProperties = getSimilarProperties(allProperties || [], property)
   const hasAboutProperty = Boolean(property.aboutProperty?.trim())
   const primaryArea = property.location.area?.trim() || 'Bangalore'
   const nearbyAreas = getNearbyAreas(property)
@@ -234,9 +265,12 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 </div>
               </div>
 
-              <UtilityBillsCard
-                utilityBillsIncluded={property.pricing.utilityBillsIncluded}
-                className="hidden lg:block"
+              <PropertyQuickFacts
+                monthlyRent={property.pricing.monthlyRent}
+                propertyType={property.propertyType}
+                squareFeet={property.pricing.squareFeet}
+                furnishingStatus={property.furnishingStatus}
+                availableFrom={property.availableFrom}
               />
             </div>
 
@@ -248,7 +282,6 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               availableFrom={property.availableFrom}
               propertyType={property.propertyType}
               furnishingStatus={property.furnishingStatus}
-              utilityBillsIncluded={property.pricing.utilityBillsIncluded}
               contactLinks={contactLinks}
             />
           </section>
@@ -267,16 +300,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             </section>
           )}
 
-          {property.facilities && property.facilities.length > 0 && (
-            <PropertyAmenities
-              facilities={property.facilities}
-              washingMachineAccess={property.washingMachineAccess}
-            />
-          )}
+          <UnitTypesCard unitTypes={property.unitTypes} />
 
-          <NearbyPlacesSection places={property.nearbyPlaces} />
-
-          <PropertyDetailsPanel
+          <PropertyComfortsCard
+            facilities={property.facilities}
+            washingMachineAccess={property.washingMachineAccess}
             facing={property.facing}
             floorNumber={property.floorNumber}
             totalFloors={property.totalFloors}
@@ -284,6 +312,19 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             petsAllowed={property.petsAllowed}
             hasBalcony={property.hasBalcony}
             societyName={property.societyName}
+            utilityBillsIncluded={property.pricing.utilityBillsIncluded}
+          />
+
+          <NearbyPlacesSection places={property.nearbyPlaces} />
+
+          <PropertyFAQ
+            depositValue={depositDisplay.value}
+            depositNote={depositDisplay.note}
+            hasParking={(property.facilities || []).some((facility) =>
+              ['Car Parking', 'Bike Parking'].includes(facility)
+            )}
+            petsAllowed={property.petsAllowed}
+            availableFrom={property.availableFrom}
           />
 
           {/* Location Map */}
@@ -300,6 +341,8 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               />
             </div>
           </section>
+
+          <SimilarProperties properties={similarProperties} settings={settings} />
         </div>
       </main>
 

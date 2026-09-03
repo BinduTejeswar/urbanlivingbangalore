@@ -63,6 +63,12 @@ export interface Property {
     utilityBillsIncluded?: UtilityBillsIncluded
     squareFeet: number
   }
+  unitTypes?: Array<{
+    _key: string
+    type: '1RK' | '1BHK' | '2BHK' | '3BHK'
+    monthlyRent: number
+    depositAmount: number
+  }>
   furnishingStatus: 'Fully Furnished' | 'Semi Furnished' | 'Unfurnished'
   isRecommended?: boolean
   facilities?: string[]

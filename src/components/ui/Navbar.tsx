@@ -99,7 +99,7 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
           <Link href="/" className="flex items-center gap-2 text-lg font-black tracking-tighter text-[#2A1B13] md:text-xl">
             <div className="relative h-10 w-10 overflow-hidden rounded-sm shadow-lg shadow-black/10">
               <Image
-                src="/logo-circle.png"
+                src="/logo-mark.png"
                 alt="UrbanLivingBangalore logo"
                 fill
                 sizes="40px"
@@ -165,7 +165,7 @@ export default function Navbar({ variant = 'default', settings, showFloatingWhat
                 >
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-sm shadow-lg shadow-black/10">
                     <Image
-                      src="/logo-circle.png"
+                      src="/logo-mark.png"
                       alt="UrbanLivingBangalore logo"
                       fill
                       sizes="56px"

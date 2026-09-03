@@ -4,6 +4,7 @@ import { NearbyPlace, Property, SiteSettings } from '@/types'
 import { useState, useMemo, useEffect } from 'react'
 import FilterBar from './FilterBar'
 import type { PropertyFilters } from './FilterBar'
+import { RENT_MAX, RENT_MIN } from './FilterControls'
 import MobileFilterSheet from './MobileFilterSheet'
 import PropertyCard from './PropertyCard'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,10 +17,11 @@ interface ListingGridProps {
 
 const DEFAULT_FILTERS: PropertyFilters = {
   locality: 'All',
-  flatType: 'All',
-  budget: 'All',
-  furnishing: 'All',
-  parking: 'All',
+  flatTypes: [],
+  minRent: RENT_MIN,
+  maxRent: RENT_MAX,
+  furnishings: [],
+  parking: [],
   near: 'All',
   sortBy: 'Budget Low',
 }
@@ -40,9 +42,16 @@ const SORT_OPTIONS: Array<{ label: string; value: PropertyFilters['sortBy'] }> =
   { label: 'High to Low', value: 'Budget High' },
 ]
 
+// Legacy shape support: older localStorage payloads (pre range/checkbox filters)
+// stored single-value strings instead of arrays and a bucketed "budget" string
+// instead of minRent/maxRent. StoredFilters accepts either shape.
 type StoredFilters = Partial<PropertyFilters> & {
   type?: string
   area?: string
+  flatType?: string
+  furnishing?: string
+  budget?: string
+  parking?: string | string[]
 }
 
 const getPropertyAreas = (property: Property) => (
@@ -59,32 +68,59 @@ const normalizeSortBy = (sortBy?: string) => {
   return DEFAULT_FILTERS.sortBy
 }
 
-const normalizeFurnishing = (furnishing?: string) => {
-  if (furnishing === 'Unfurnished') return DEFAULT_FILTERS.furnishing
-  return furnishing ?? DEFAULT_FILTERS.furnishing
+const legacyBudgetToRange = (budget?: string): { minRent: number; maxRent: number } | null => {
+  switch (budget) {
+    case 'Under 10k':
+    case '10k-15k':
+    case 'Under 15k':
+      return { minRent: RENT_MIN, maxRent: 15000 }
+    case '15k-25k':
+    case '15k-30k':
+      return { minRent: 15000, maxRent: 30000 }
+    case '30k-40k':
+      return { minRent: 30000, maxRent: 40000 }
+    case '25k+':
+    case '40k+':
+      return { minRent: 40000, maxRent: RENT_MAX }
+    default:
+      return null
+  }
 }
 
-const normalizeFlatType = (flatType?: string) => {
-  if (flatType === 'Studio/Bachelor') return '1RK'
-  return flatType ?? DEFAULT_FILTERS.flatType
-}
+const normalizeFilters = (filters: StoredFilters): PropertyFilters => {
+  const flatTypes = Array.isArray(filters.flatTypes)
+    ? filters.flatTypes
+    : filters.flatType && filters.flatType !== 'All'
+      ? [filters.flatType === 'Studio/Bachelor' ? '1RK' : filters.flatType]
+      : []
 
-const normalizeBudget = (budget?: string) => {
-  if (budget === 'Under 10k' || budget === '10k-15k') return 'Under 15k'
-  if (budget === '15k-25k') return '15k-30k'
-  if (budget === '25k+') return DEFAULT_FILTERS.budget
-  return budget ?? DEFAULT_FILTERS.budget
-}
+  const furnishings = Array.isArray(filters.furnishings)
+    ? filters.furnishings
+    : filters.furnishing && filters.furnishing !== 'All'
+      ? [filters.furnishing]
+      : []
 
-const normalizeFilters = (filters: StoredFilters): PropertyFilters => ({
-  locality: filters.locality ?? filters.area ?? DEFAULT_FILTERS.locality,
-  flatType: normalizeFlatType(filters.flatType ?? filters.type),
-  budget: normalizeBudget(filters.budget),
-  furnishing: normalizeFurnishing(filters.furnishing),
-  parking: filters.parking ?? DEFAULT_FILTERS.parking,
-  near: filters.near ?? DEFAULT_FILTERS.near,
-  sortBy: normalizeSortBy(filters.sortBy),
-})
+  const parking = Array.isArray(filters.parking)
+    ? filters.parking
+    : filters.parking && filters.parking !== 'All'
+      ? [filters.parking === 'No' ? 'No Parking' : filters.parking]
+      : []
+
+  const legacyRange = legacyBudgetToRange(filters.budget)
+  const minRent = typeof filters.minRent === 'number' ? filters.minRent : legacyRange?.minRent ?? DEFAULT_FILTERS.minRent
+  const maxRent = typeof filters.maxRent === 'number' ? filters.maxRent : legacyRange?.maxRent ?? DEFAULT_FILTERS.maxRent
+
+  return {
+    locality: filters.locality ?? filters.area ?? DEFAULT_FILTERS.locality,
+    flatTypes,
+    minRent,
+    maxRent,
+    furnishings,
+    parking,
+    near: filters.near ?? DEFAULT_FILTERS.near,
+    sortBy: normalizeSortBy(filters.sortBy),
+  }
+}
 
 const propertyHasNearbyCategory = (property: Property, category: string) => (
   (property.nearbyPlaces || []).some((place) => (
@@ -229,19 +265,20 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
     const results = properties.filter(property => {
       if (filters.locality !== 'All' && !getPropertyAreas(property).includes(filters.locality)) return false
 
-      if (filters.flatType !== 'All' && property.propertyType !== filters.flatType) return false
-      
+      if (filters.flatTypes.length > 0 && !filters.flatTypes.includes(property.propertyType)) return false
+
       const rent = property.pricing.monthlyRent
-      if (filters.budget === 'Under 15k' && rent >= 15000) return false
-      if (filters.budget === '15k-30k' && (rent < 15000 || rent >= 30000)) return false
-      if (filters.budget === '30k-40k' && (rent < 30000 || rent >= 40000)) return false
-      if (filters.budget === '40k+' && rent < 40000) return false
+      if (rent < filters.minRent) return false
+      if (filters.maxRent < RENT_MAX && rent > filters.maxRent) return false
 
-      if (filters.furnishing !== 'All' && property.furnishingStatus !== filters.furnishing) return false
+      if (filters.furnishings.length > 0 && !filters.furnishings.includes(property.furnishingStatus)) return false
 
-      if (filters.parking === 'Car Parking' && !hasParkingFacility(property, 'Car Parking')) return false
-      if (filters.parking === 'Bike Parking' && !hasParkingFacility(property, 'Bike Parking')) return false
-      if (filters.parking === 'No' && hasAnyParking(property)) return false
+      if (filters.parking.length > 0) {
+        const matchesParking = filters.parking.some((option) => (
+          option === 'No Parking' ? !hasAnyParking(property) : hasParkingFacility(property, option as 'Car Parking' | 'Bike Parking')
+        ))
+        if (!matchesParking) return false
+      }
 
       if (filters.near !== 'All' && !propertyHasNearbyCategory(property, filters.near)) return false
 
@@ -261,9 +298,14 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
     })
   }, [properties, filters, showSavedOnly, savedIds])
 
-  const activeFilterCount = Object.entries(filters).filter(([key, value]) => (
-    key !== 'sortBy' && value !== DEFAULT_FILTERS[key as keyof PropertyFilters]
-  )).length
+  const activeFilterCount = [
+    filters.locality !== 'All',
+    filters.flatTypes.length > 0,
+    filters.minRent !== DEFAULT_FILTERS.minRent || filters.maxRent !== DEFAULT_FILTERS.maxRent,
+    filters.furnishings.length > 0,
+    filters.parking.length > 0,
+    filters.near !== 'All',
+  ].filter(Boolean).length
   const whatsappNumber = normalizeWhatsappNumber(settings?.whatsappNumber)
   const whatsappMessage = settings?.whatsappMessage || WHATSAPP_MESSAGE
   const whatsappUrl = whatsappNumber
