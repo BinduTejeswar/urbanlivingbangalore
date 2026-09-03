@@ -40,6 +40,14 @@ export default function Hero({ localities = [] }: HeroProps) {
 
   return (
     <section className="relative overflow-hidden bg-[#F3ECE3] pt-36 pb-28 md:pt-44 md:pb-36">
+      {/* Abstract skyline graphic, no stock photography */}
+      <img
+        src="/hero-skyline.svg"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[280px] w-full object-cover object-bottom opacity-90 md:h-[380px]"
+      />
+
       {/* Decorative warm glow, no stock photography */}
       <div
         aria-hidden="true"
