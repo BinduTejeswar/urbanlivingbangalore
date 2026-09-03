@@ -223,7 +223,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         onFocus={() => setIsCardHovered(true)}
         onBlur={stopImageSlider}
         onClickCapture={handleCardClickCapture}
-        className="relative bg-white rounded-[2rem] overflow-hidden border border-[#DDE8DD] hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(35,55,35,0.1)] transition-all duration-500 flex flex-col h-full"
+        className="relative bg-white rounded-[2rem] overflow-hidden border border-[#E6DDD0] hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(28,16,8,0.1)] transition-all duration-500 flex flex-col h-full"
       >
         {/* Image Container - Slightly shorter aspect ratio */}
         <div
@@ -254,7 +254,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
               </motion.div>
             </AnimatePresence>
           ) : (
-            <div className="w-full h-full bg-[#EEF4EE]" />
+            <div className="w-full h-full bg-[#F1E6D6]" />
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -314,7 +314,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         </div>
 
         {/* Content - Compacted padding */}
-        <div className="p-6 flex flex-col flex-grow">
+        <div className="p-5 md:p-6 flex flex-col flex-grow">
           <div className="mb-4">
             <div className="flex items-start gap-3">
               <h3 className="min-w-0 flex-1 font-black text-xl text-[#1C1008] leading-tight group-hover:text-primary transition-colors line-clamp-1">
@@ -325,7 +325,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
                 onClick={handleShare}
                 aria-label="Share property"
                 title="Share property"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#DDE8DD] bg-[#EEF4EE] text-primary transition-all hover:border-primary/40 hover:bg-primary hover:text-white active:scale-95"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E6DDD0] bg-[#F1E6D6] text-primary transition-all hover:border-primary/40 hover:bg-primary hover:text-white active:scale-95"
               >
                 <Share2 className="h-4 w-4" />
               </button>
@@ -351,13 +351,13 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
               {property.facilities?.slice(0, 4).map((fac) => {
                 const Icon = facilityIcons[fac] || CheckCircle2
                 return (
-                  <div key={fac} className="bg-[#EEF4EE] p-1.5 rounded-lg border border-[#DDE8DD]" title={fac}>
+                  <div key={fac} className="bg-[#F1E6D6] p-1.5 rounded-lg border border-[#E6DDD0]" title={fac}>
                     <Icon className="w-3.5 h-3.5 text-primary" />
                   </div>
                 )
               })}
               {property.facilities && property.facilities.length > 4 && (
-                <div className="bg-[#EEF4EE] px-2 py-1.5 rounded-lg border border-[#DDE8DD] text-[9px] font-black text-primary">
+                <div className="bg-[#F1E6D6] px-2 py-1.5 rounded-lg border border-[#E6DDD0] text-[9px] font-black text-primary">
                   +{property.facilities.length - 4}
                 </div>
               )}
@@ -376,7 +376,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
             )}
           </div>
 
-          <div className="mt-auto pt-4 border-t border-[#E2EAE2] flex items-center justify-between gap-4">
+          <div className="mt-auto pt-4 border-t border-[#E6DDD0] flex items-center justify-between gap-4">
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sqft</span>
               <span className="text-[#1C1008] font-bold text-xs">{property.pricing.squareFeet}</span>

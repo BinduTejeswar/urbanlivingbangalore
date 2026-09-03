@@ -211,7 +211,7 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
   )
 
   return (
-    <section id="listings" className="bg-[#F6F8F4] pt-4 pb-36 transition-colors duration-500 md:pt-24 lg:pb-24">
+    <section id="listings" className="bg-[#F3ECE3] pt-4 pb-36 transition-colors duration-500 md:pt-24 lg:pb-24">
       <div className="max-w-[1500px] mx-auto pl-2 pr-4 md:pl-3 md:pr-6 lg:pl-2 lg:pr-8 lg:grid lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-6 xl:gap-8 items-start">
         <div className="hidden lg:block">
           <FilterBar
@@ -249,7 +249,7 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
                       className={`rounded-xl border px-4 py-2.5 text-xs font-black transition-all active:scale-95 ${
                         isActive
                           ? 'border-primary bg-primary text-white shadow-lg shadow-orange-900/15'
-                          : 'border-[#DDE8DD] bg-white text-[#1C1008] hover:border-primary/40'
+                          : 'border-[#E6DDD0] bg-white text-[#1C1008] hover:border-primary/40'
                       }`}
                     >
                       {option.label}
@@ -261,7 +261,7 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
           </div>
 
           {filteredProperties.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3 xl:gap-8">
               <AnimatePresence mode="popLayout">
                 {filteredProperties.map((property) => (
                   <PropertyCard key={property._id} property={property} settings={settings} />
@@ -272,10 +272,10 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-32 text-center"
+              className="flex flex-col items-center justify-center py-20 text-center md:py-32"
             >
-              <div className="w-24 h-24 bg-orange-50 rounded-[2rem] flex items-center justify-center mb-8 border border-orange-100">
-                <HomeIcon className="w-10 h-10 text-slate-400" />
+              <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-8 border border-primary/20">
+                <HomeIcon className="w-10 h-10 text-primary/70" />
               </div>
               <h3 className="text-3xl font-black text-[#1C1008] mb-4 tracking-tighter">No Flats Found</h3>
               <p className="text-slate-500 max-w-md font-medium">
@@ -294,12 +294,12 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
       </div>
 
       {!isFooterVisible && (
-        <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-[#DDE8DD] bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-18px_40px_rgba(28,16,8,0.12)] backdrop-blur-xl lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-[#E6DDD0] bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-18px_40px_rgba(28,16,8,0.12)] backdrop-blur-xl lg:hidden">
           <div className={`mx-auto grid h-12 max-w-md ${whatsappUrl ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <button
               type="button"
               onClick={openMobileFilters}
-              className="relative flex items-center justify-center gap-1.5 font-bold text-slate-700 active:bg-[#EEF4EE]"
+              className="relative flex items-center justify-center gap-1.5 font-bold text-slate-700 active:bg-[#F1E6D6]"
             >
               <span className="relative">
                 <Filter className="h-4 w-4 text-slate-700" />
@@ -317,7 +317,7 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Chat on WhatsApp"
-                className="flex items-center justify-center gap-1.5 border-l border-[#DDE8DD] font-bold text-slate-700 active:bg-[#EEF4EE]"
+                className="flex items-center justify-center gap-1.5 border-l border-[#E6DDD0] font-bold text-slate-700 active:bg-[#F1E6D6]"
               >
                 <MessageCircle className="h-4 w-4 text-[#12A150]" />
                 <span className="text-[11px] leading-none">WhatsApp</span>

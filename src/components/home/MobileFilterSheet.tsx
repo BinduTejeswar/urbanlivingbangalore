@@ -111,7 +111,7 @@ export default function MobileFilterSheet({
 
   return (
     <div className="flex h-[82vh] max-h-[680px] flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl">
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#E6DDD0] px-4">
         <h2 className="text-lg font-black text-[#1C1008]">Filters</h2>
         <button
           type="button"
@@ -123,7 +123,7 @@ export default function MobileFilterSheet({
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-[38%_62%]">
-        <div className="overflow-y-auto border-r border-slate-200 bg-slate-50 p-2">
+        <div className="overflow-y-auto border-r border-[#E6DDD0] bg-[#F3ECE3] p-2">
           {categories.map((category) => {
             const isActive = activeCategory.key === category.key
             const hasValue = filters[category.key] !== 'All' && filters[category.key] !== 'Budget Low'
@@ -135,7 +135,7 @@ export default function MobileFilterSheet({
                 onClick={() => setActiveKey(category.key)}
                 className={`relative mb-1 flex min-h-12 w-full items-center rounded-lg px-3 text-left text-sm font-bold transition-colors ${
                   isActive
-                    ? 'bg-slate-200 text-[#1C1008]'
+                    ? 'bg-white border border-[#E6DDD0] text-primary shadow-sm'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -157,7 +157,7 @@ export default function MobileFilterSheet({
                 key={option.value}
                 type="button"
                 onClick={() => handleSelect(option.value)}
-                className="flex min-h-14 w-full items-center gap-3 px-5 text-left text-base font-bold text-[#1C1008] transition-colors hover:bg-[#F6F8F4]"
+                className="flex min-h-14 w-full items-center gap-3 px-5 text-left text-base font-bold text-[#1C1008] transition-colors hover:bg-[#F3ECE3]"
               >
                 <span
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
@@ -173,7 +173,7 @@ export default function MobileFilterSheet({
         </div>
       </div>
 
-      <div className="grid shrink-0 grid-cols-[1fr_1.15fr] gap-4 border-t border-slate-200 bg-white px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+      <div className="grid shrink-0 grid-cols-[1fr_1.15fr] gap-4 border-t border-[#E6DDD0] bg-white px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         <button
           type="button"
           onClick={onClose}

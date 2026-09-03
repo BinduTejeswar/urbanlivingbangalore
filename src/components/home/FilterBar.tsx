@@ -45,7 +45,7 @@ function FilterSelect({ label, name, value, options, onChange }: FilterSelectPro
         <select
           value={value}
           onChange={(e) => onChange(name, e.target.value)}
-          className="w-full bg-white text-[#1C1008] border border-[#DDE8DD] rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none appearance-none transition-all group-hover:border-primary/50 cursor-pointer"
+          className="w-full bg-white text-[#1C1008] border border-[#E6DDD0] rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none appearance-none transition-all group-hover:border-primary/50 cursor-pointer"
         >
           {options.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -72,7 +72,7 @@ export default function FilterBar({ properties, filters, setFilters, onReset, cl
   }
 
   return (
-    <aside className={`bg-[#EEF4EE]/95 backdrop-blur-2xl border border-[#DDE8DD] rounded-2xl p-4 shadow-xl shadow-slate-900/5 ${className}`}>
+    <aside className={`bg-[#F1E6D6]/95 backdrop-blur-2xl border border-[#E6DDD0] rounded-2xl p-4 shadow-xl shadow-slate-900/5 ${className}`}>
       <div className="flex flex-col gap-5">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -87,7 +87,7 @@ export default function FilterBar({ properties, filters, setFilters, onReset, cl
           <button
             type="button"
             onClick={onReset}
-            className="shrink-0 p-3 rounded-xl bg-white/85 text-slate-500 hover:text-primary hover:bg-white transition-colors border border-[#DDE8DD]"
+            className="shrink-0 p-3 rounded-xl bg-white/85 text-slate-500 hover:text-primary hover:bg-white transition-colors border border-[#E6DDD0]"
             aria-label="Reset filters"
             title="Reset filters"
           >
