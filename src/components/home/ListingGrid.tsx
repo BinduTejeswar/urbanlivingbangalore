@@ -1,13 +1,13 @@
 'use client'
 
-import { Property, SiteSettings } from '@/types'
+import { NearbyPlace, Property, SiteSettings } from '@/types'
 import { useState, useMemo, useEffect } from 'react'
 import FilterBar from './FilterBar'
 import type { PropertyFilters } from './FilterBar'
 import MobileFilterSheet from './MobileFilterSheet'
 import PropertyCard from './PropertyCard'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Filter, Home as HomeIcon, MessageCircle } from 'lucide-react'
+import { Filter, Heart, Home as HomeIcon, MessageCircle } from 'lucide-react'
 
 interface ListingGridProps {
   properties: Property[]
@@ -20,8 +20,18 @@ const DEFAULT_FILTERS: PropertyFilters = {
   budget: 'All',
   furnishing: 'All',
   parking: 'All',
+  near: 'All',
   sortBy: 'Budget Low',
 }
+
+const NEAR_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: 'Near Metro', value: 'Metro & Commute' },
+  { label: 'IT Parks', value: 'IT Companies' },
+  { label: 'Hospitals', value: 'Healthcare' },
+  { label: 'Schools', value: 'Schools' },
+]
+
+const SAVED_PROPERTIES_KEY = 'savedProperties'
 
 const WHATSAPP_MESSAGE = "Hi, I'm interested in a flat listed on UrbanLivingBangalore."
 
@@ -72,8 +82,32 @@ const normalizeFilters = (filters: StoredFilters): PropertyFilters => ({
   budget: normalizeBudget(filters.budget),
   furnishing: normalizeFurnishing(filters.furnishing),
   parking: filters.parking ?? DEFAULT_FILTERS.parking,
+  near: filters.near ?? DEFAULT_FILTERS.near,
   sortBy: normalizeSortBy(filters.sortBy),
 })
+
+const propertyHasNearbyCategory = (property: Property, category: string) => (
+  (property.nearbyPlaces || []).some((place) => (
+    typeof place === 'object' && (place as NearbyPlace)?.category === category
+  ))
+)
+
+const getAvailability = (availableFrom?: string): { label: string; isNow: boolean } | null => {
+  if (!availableFrom) return null
+
+  const date = new Date(availableFrom)
+  if (Number.isNaN(date.getTime())) return null
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  if (date <= today) return { label: 'Available now', isNow: true }
+
+  return {
+    label: `From ${date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+    isNow: false,
+  }
+}
 
 const hasParkingFacility = (property: Property, parkingType: 'Bike Parking' | 'Car Parking') => {
   return Boolean(property.facilities?.some((facility) => facility.toLowerCase() === parkingType.toLowerCase()))
@@ -99,6 +133,9 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
   const [isFooterVisible, setIsFooterVisible] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [savedIds, setSavedIds] = useState<string[]>([])
+  const [showSavedOnly, setShowSavedOnly] = useState(false)
+  const [isSavedInitialized, setIsSavedInitialized] = useState(false)
 
   // Load filters from localStorage on mount
   useEffect(() => {
@@ -129,6 +166,42 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
       localStorage.setItem('propertyFilters', JSON.stringify(filters))
     }
   }, [filters, isInitialized])
+
+  // Load saved (wishlisted) flats from localStorage on mount
+  useEffect(() => {
+    let isActive = true
+
+    queueMicrotask(() => {
+      if (!isActive) return
+
+      try {
+        const stored = localStorage.getItem(SAVED_PROPERTIES_KEY)
+        if (stored) setSavedIds(JSON.parse(stored))
+      } catch (e) {
+        console.error('Error parsing saved flats', e)
+      }
+      setIsSavedInitialized(true)
+    })
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
+  // Persist saved flats whenever they change
+  useEffect(() => {
+    if (isSavedInitialized) {
+      localStorage.setItem(SAVED_PROPERTIES_KEY, JSON.stringify(savedIds))
+    }
+  }, [savedIds, isSavedInitialized])
+
+  const toggleSaved = (propertyId: string) => {
+    setSavedIds((current) => (
+      current.includes(propertyId)
+        ? current.filter((id) => id !== propertyId)
+        : [...current, propertyId]
+    ))
+  }
 
   useEffect(() => {
     document.body.style.overflow = isMobileFiltersOpen ? 'hidden' : ''
@@ -170,6 +243,10 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
       if (filters.parking === 'Bike Parking' && !hasParkingFacility(property, 'Bike Parking')) return false
       if (filters.parking === 'No' && hasAnyParking(property)) return false
 
+      if (filters.near !== 'All' && !propertyHasNearbyCategory(property, filters.near)) return false
+
+      if (showSavedOnly && !savedIds.includes(property._id)) return false
+
       return true
     })
 
@@ -182,7 +259,7 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
         ? b.pricing.monthlyRent - a.pricing.monthlyRent
         : a.pricing.monthlyRent - b.pricing.monthlyRent
     })
-  }, [properties, filters])
+  }, [properties, filters, showSavedOnly, savedIds])
 
   const activeFilterCount = Object.entries(filters).filter(([key, value]) => (
     key !== 'sortBy' && value !== DEFAULT_FILTERS[key as keyof PropertyFilters]
@@ -218,7 +295,7 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
             properties={properties}
             filters={filters}
             setFilters={setFilters}
-            onReset={() => setFilters(DEFAULT_FILTERS)}
+            onReset={() => { setFilters(DEFAULT_FILTERS); setShowSavedOnly(false) }}
             className="lg:sticky lg:top-20"
           />
         </div>
@@ -260,11 +337,54 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
             </div>
           </div>
 
+          <div className="mb-5 -mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
+            <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Near
+            </span>
+            {NEAR_OPTIONS.map((option) => {
+              const isActive = filters.near === option.value
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFilters(prev => ({ ...prev, near: isActive ? 'All' : option.value }))}
+                  className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all active:scale-95 ${
+                    isActive
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-[#E6DDD0] bg-white text-[#6B5D4F] hover:border-primary/40'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+            <span className="mx-1 h-4 w-px shrink-0 bg-[#E6DDD0]" />
+            <button
+              type="button"
+              onClick={() => setShowSavedOnly((current) => !current)}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all active:scale-95 ${
+                showSavedOnly
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-[#E6DDD0] bg-white text-[#6B5D4F] hover:border-primary/40'
+              }`}
+            >
+              <Heart className={`h-3.5 w-3.5 ${showSavedOnly ? 'fill-white' : ''}`} />
+              Saved{savedIds.length > 0 ? ` (${savedIds.length})` : ''}
+            </button>
+          </div>
+
           {filteredProperties.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3 xl:gap-8">
               <AnimatePresence mode="popLayout">
                 {filteredProperties.map((property) => (
-                  <PropertyCard key={property._id} property={property} settings={settings} />
+                  <PropertyCard
+                    key={property._id}
+                    property={property}
+                    settings={settings}
+                    isSaved={savedIds.includes(property._id)}
+                    onToggleSave={toggleSaved}
+                  />
                 ))}
               </AnimatePresence>
             </div>
@@ -275,17 +395,25 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
               className="flex flex-col items-center justify-center py-20 text-center md:py-32"
             >
               <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-8 border border-primary/20">
-                <HomeIcon className="w-10 h-10 text-primary/70" />
+                {showSavedOnly ? (
+                  <Heart className="w-10 h-10 text-primary/70" />
+                ) : (
+                  <HomeIcon className="w-10 h-10 text-primary/70" />
+                )}
               </div>
-              <h3 className="text-3xl font-black text-[#1C1008] mb-4 tracking-tighter">No Flats Found</h3>
+              <h3 className="text-3xl font-black text-[#1C1008] mb-4 tracking-tighter">
+                {showSavedOnly ? 'No Saved Flats Yet' : 'No Flats Found'}
+              </h3>
               <p className="text-slate-500 max-w-md font-medium">
-                We couldn&apos;t find any flats matching these filters. Try adjusting your search or resetting all filters.
+                {showSavedOnly
+                  ? 'Tap the heart icon on any flat to save it here for later.'
+                  : "We couldn&apos;t find any flats matching these filters. Try adjusting your search or resetting all filters."}
               </p>
               <button
-                onClick={() => setFilters(DEFAULT_FILTERS)}
+                onClick={() => { setFilters(DEFAULT_FILTERS); setShowSavedOnly(false) }}
                 className="mt-10 bg-primary text-white px-8 py-4 rounded-2xl font-black transition-all shadow-xl shadow-orange-500/20 active:scale-95"
               >
-                Reset All Filters
+                {showSavedOnly ? 'Browse All Flats' : 'Reset All Filters'}
               </button>
             </motion.div>
           )}

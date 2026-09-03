@@ -12,6 +12,7 @@ export type PropertyFilters = {
   budget: string
   furnishing: string
   parking: string
+  near: string
   sortBy: string
 }
 

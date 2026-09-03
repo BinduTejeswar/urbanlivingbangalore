@@ -4,7 +4,7 @@ import { Property, SiteSettings } from '@/types'
 import { urlForImage } from '@/sanity/lib/image'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Share2, MapPin, IndianRupee, CheckCircle2, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, Fingerprint, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Share2, MapPin, IndianRupee, CheckCircle2, Heart, Wind, Tv, WashingMachine, Wifi, Thermometer, Microwave, Sofa, Table, Archive, Camera, Zap, ArrowUpCircle, Car, Bike, ShieldUser, Fingerprint, BedSingle, Coffee, GlassWater, Flame, PlugZap, PanelsTopLeft, LampDesk, Armchair, ShelvingUnit, Fan, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -12,6 +12,25 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface PropertyCardProps {
   property: Property
   settings?: SiteSettings | null
+  isSaved?: boolean
+  onToggleSave?: (propertyId: string) => void
+}
+
+const getAvailability = (availableFrom?: string): { label: string; isNow: boolean } | null => {
+  if (!availableFrom) return null
+
+  const date = new Date(availableFrom)
+  if (Number.isNaN(date.getTime())) return null
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  if (date <= today) return { label: 'Available now', isNow: true }
+
+  return {
+    label: `From ${date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+    isNow: false,
+  }
 }
 
 // Map facility strings to Lucide icons
@@ -66,7 +85,7 @@ function normalizeWhatsappNumber(phoneNumber?: string) {
   return digits
 }
 
-export default function PropertyCard({ property, settings }: PropertyCardProps) {
+export default function PropertyCard({ property, settings, isSaved = false, onToggleSave }: PropertyCardProps) {
   const [showToast, setShowToast] = useState(false)
   const [isCardHovered, setIsCardHovered] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -78,6 +97,7 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
       ?.filter((image) => image.asset?._ref)
       .map((image) => urlForImage(image).width(800).url()) || []
   ), [property.images])
+  const availability = useMemo(() => getAvailability(property.availableFrom), [property.availableFrom])
   const activeImageUrl = imageUrls[activeImageIndex % imageUrls.length]
   const hasMultipleImages = imageUrls.length > 1
   const primaryArea = property.location.area?.trim()
@@ -212,6 +232,12 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
     window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
   }
 
+  const handleToggleSave = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onToggleSave?.(property._id)
+  }
+
   return (
     <Link href={`/flats/${property.slug.current}`} className="block group">
       <motion.div 
@@ -254,16 +280,27 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
               </motion.div>
             </AnimatePresence>
           ) : (
-            <div className="w-full h-full bg-[#F1E6D6]" />
+            <div className="h-full w-full bg-gradient-to-br from-primary/15 via-[#F1E6D6] to-secondary/15" />
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-          {/* Rent Badge */}
-          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-[#1C1008] px-3 py-1.5 rounded-xl font-black flex items-center gap-1 shadow-2xl border border-white/10 text-sm">
-            <IndianRupee className="w-3 h-3" />
-            {property.pricing.monthlyRent.toLocaleString('en-IN')}
-            <span className="text-[9px] text-slate-500 font-bold uppercase ml-1">/ mo</span>
+          {/* Rent + availability badges */}
+          <div className="absolute left-4 top-4 flex flex-col items-start gap-2">
+            <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/95 px-3 py-1.5 text-sm font-black text-[#1C1008] shadow-2xl backdrop-blur-md">
+              <IndianRupee className="w-3 h-3" />
+              {property.pricing.monthlyRent.toLocaleString('en-IN')}
+              <span className="ml-1 text-[9px] font-bold uppercase text-slate-500">/ mo</span>
+            </div>
+            {availability && (
+              <div
+                className={`rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white shadow-lg backdrop-blur-md ${
+                  availability.isNow ? 'bg-secondary/95' : 'bg-[#4A403A]/90'
+                }`}
+              >
+                {availability.label}
+              </div>
+            )}
           </div>
 
           {property.isRecommended && (
@@ -316,10 +353,25 @@ export default function PropertyCard({ property, settings }: PropertyCardProps) 
         {/* Content - Compacted padding */}
         <div className="p-5 md:p-6 flex flex-col flex-grow">
           <div className="mb-4">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2">
               <h3 className="min-w-0 flex-1 font-black text-xl text-[#1C1008] leading-tight group-hover:text-primary transition-colors line-clamp-1">
                 {property.title}
               </h3>
+              {onToggleSave && (
+                <button
+                  type="button"
+                  onClick={handleToggleSave}
+                  aria-label={isSaved ? 'Remove from saved flats' : 'Save this flat'}
+                  title={isSaved ? 'Remove from saved' : 'Save flat'}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-95 ${
+                    isSaved
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-[#E6DDD0] bg-[#F1E6D6] text-primary hover:border-primary/40 hover:bg-primary hover:text-white'
+                  }`}
+                >
+                  <Heart className={`h-4 w-4 ${isSaved ? 'fill-white' : ''}`} />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleShare}
