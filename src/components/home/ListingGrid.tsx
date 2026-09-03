@@ -211,8 +211,27 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
   )
 
   return (
-    <section id="listings" className="bg-[#F3ECE3] pt-4 pb-36 transition-colors duration-500 md:pt-24 lg:pb-24">
-      <div className="max-w-[1500px] mx-auto pl-2 pr-4 md:pl-3 md:pr-6 lg:pl-2 lg:pr-8 lg:grid lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-6 xl:gap-8 items-start">
+    <section id="listings" className="relative overflow-hidden bg-[#F3ECE3] pt-4 pb-36 transition-colors duration-500 md:pt-24 lg:pb-24">
+      <img
+        src="/hero-skyline.svg"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[220px] w-full object-cover opacity-25 md:h-[260px]"
+      />
+
+      <div className="relative z-10 max-w-[1500px] mx-auto px-4 md:px-6 lg:px-8 mb-8 md:mb-10">
+        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+          Owner-listed homes
+        </p>
+        <h1 className="font-serif text-4xl font-normal leading-[1.05] tracking-tight text-[#1C1008] sm:text-5xl">
+          Explore flats <span className="italic text-primary">in Bangalore.</span>
+        </h1>
+        <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-[#6B5D4F] md:text-base">
+          Handpicked homes listed directly by owners across the city — no brokers, no brokerage, just browse and move in.
+        </p>
+      </div>
+
+      <div className="relative z-10 max-w-[1500px] mx-auto pl-2 pr-4 md:pl-3 md:pr-6 lg:pl-2 lg:pr-8 lg:grid lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-6 xl:gap-8 items-start">
         <div className="hidden lg:block">
           <FilterBar
             properties={properties}
@@ -224,20 +243,15 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
         </div>
 
         <div className="mt-0 min-w-0">
-          <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div>
-              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-primary">
-                Owner-listed homes
-              </p>
-              <p className="text-sm font-black text-slate-500">
-                {filteredProperties.length} {filteredProperties.length === 1 ? 'flat' : 'flats'} available
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">
-                Sort by budget
-              </p>
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-black text-[#1C1008]">
+              {filteredProperties.length} {filteredProperties.length === 1 ? 'flat' : 'flats'} available
+            </p>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="hidden text-[10px] font-black uppercase tracking-[0.22em] text-slate-400 sm:inline">
+                Sort
+              </span>
+              <div className="inline-flex items-center gap-1 rounded-full border border-[#E6DDD0] bg-white p-1 shadow-sm">
                 {SORT_OPTIONS.map((option) => {
                   const isActive = filters.sortBy === option.value
 
@@ -246,10 +260,10 @@ export default function ListingGrid({ properties, settings }: ListingGridProps) 
                       key={option.value}
                       type="button"
                       onClick={() => setFilters(prev => ({ ...prev, sortBy: option.value }))}
-                      className={`rounded-xl border px-4 py-2.5 text-xs font-black transition-all active:scale-95 ${
+                      className={`rounded-full px-4 py-2 text-xs font-black transition-all active:scale-95 ${
                         isActive
-                          ? 'border-primary bg-primary text-white shadow-lg shadow-orange-900/15'
-                          : 'border-[#E6DDD0] bg-white text-[#1C1008] hover:border-primary/40'
+                          ? 'bg-primary text-white shadow-md shadow-orange-900/15'
+                          : 'text-[#6B5D4F] hover:text-[#1C1008]'
                       }`}
                     >
                       {option.label}

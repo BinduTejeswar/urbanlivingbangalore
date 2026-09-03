@@ -3,7 +3,8 @@
 import { Property } from '@/types'
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
-import { ChevronDown, Filter, RotateCcw } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { Building2, ChevronDown, Filter, IndianRupee, MapPin, RotateCcw, Sofa, SquareParking } from 'lucide-react'
 
 export type PropertyFilters = {
   locality: string
@@ -31,14 +32,16 @@ interface FilterSelectProps {
   label: string
   name: keyof PropertyFilters
   value: string
+  icon: LucideIcon
   options: FilterOption[]
   onChange: (name: keyof PropertyFilters, value: string) => void
 }
 
-function FilterSelect({ label, name, value, options, onChange }: FilterSelectProps) {
+function FilterSelect({ label, name, value, icon: Icon, options, onChange }: FilterSelectProps) {
   return (
     <div className="flex flex-col min-w-[160px] flex-grow lg:min-w-0 lg:w-full">
-      <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-1">
+      <label className="mb-2 flex items-center gap-1.5 px-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#8A7A68]">
+        <Icon className="h-3 w-3 text-primary" />
         {label}
       </label>
       <div className="relative group">
@@ -51,7 +54,7 @@ function FilterSelect({ label, name, value, options, onChange }: FilterSelectPro
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-hover:text-primary transition-colors pointer-events-none" />
+        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary transition-colors pointer-events-none" />
       </div>
     </div>
   )
@@ -72,22 +75,22 @@ export default function FilterBar({ properties, filters, setFilters, onReset, cl
   }
 
   return (
-    <aside className={`bg-[#F1E6D6]/95 backdrop-blur-2xl border border-[#E6DDD0] rounded-2xl p-4 shadow-xl shadow-slate-900/5 ${className}`}>
+    <aside className={`bg-white/90 backdrop-blur-2xl border border-[#E6DDD0] rounded-[1.75rem] p-5 shadow-xl shadow-[#1C1008]/5 ${className}`}>
       <div className="flex flex-col gap-5">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-xl border border-primary/20 w-fit">
-              <Filter className="w-4 h-4 text-primary" />
-              <span className="text-xs font-black text-primary uppercase tracking-widest">Explore Flats</span>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Filter className="h-4 w-4" />
             </div>
-            <p className="mt-3 text-xs font-bold text-slate-500">
-              Refine by locality, budget, and essentials.
-            </p>
+            <div>
+              <p className="text-sm font-black text-[#1C1008]">Filters</p>
+              <p className="text-[11px] font-semibold text-[#8A7A68]">Locality, budget &amp; essentials</p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onReset}
-            className="shrink-0 p-3 rounded-xl bg-white/85 text-slate-500 hover:text-primary hover:bg-white transition-colors border border-[#E6DDD0]"
+            className="shrink-0 p-2.5 rounded-xl bg-[#F3ECE3] text-[#8A7A68] hover:text-primary hover:bg-white transition-colors border border-[#E6DDD0]"
             aria-label="Reset filters"
             title="Reset filters"
           >
@@ -95,19 +98,23 @@ export default function FilterBar({ properties, filters, setFilters, onReset, cl
           </button>
         </div>
 
+        <div className="h-px bg-[#EDE6DB]" />
+
         <div className="flex flex-wrap gap-4 lg:flex-col">
-          <FilterSelect 
+          <FilterSelect
             label="Locality"
             name="locality"
             value={filters.locality}
+            icon={MapPin}
             onChange={handleChange}
             options={localities.map(locality => ({ label: locality, value: locality }))}
           />
 
           <FilterSelect
-            label="Flat Type" 
-            name="flatType" 
-            value={filters.flatType} 
+            label="Flat Type"
+            name="flatType"
+            value={filters.flatType}
+            icon={Building2}
             onChange={handleChange}
             options={[
               { label: 'All Types', value: 'All' },
@@ -118,10 +125,11 @@ export default function FilterBar({ properties, filters, setFilters, onReset, cl
             ]}
           />
 
-          <FilterSelect 
-            label="Monthly Rent" 
-            name="budget" 
-            value={filters.budget} 
+          <FilterSelect
+            label="Monthly Rent"
+            name="budget"
+            value={filters.budget}
+            icon={IndianRupee}
             onChange={handleChange}
             options={[
               { label: 'All Budgets', value: 'All' },
@@ -132,10 +140,11 @@ export default function FilterBar({ properties, filters, setFilters, onReset, cl
             ]}
           />
 
-          <FilterSelect 
-            label="Furnishing" 
-            name="furnishing" 
-            value={filters.furnishing} 
+          <FilterSelect
+            label="Furnishing"
+            name="furnishing"
+            value={filters.furnishing}
+            icon={Sofa}
             onChange={handleChange}
             options={[
               { label: 'All Status', value: 'All' },
@@ -148,6 +157,7 @@ export default function FilterBar({ properties, filters, setFilters, onReset, cl
             label="Parking"
             name="parking"
             value={filters.parking}
+            icon={SquareParking}
             onChange={handleChange}
             options={[
               { label: 'Any', value: 'All' },
